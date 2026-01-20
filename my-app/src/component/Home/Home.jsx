@@ -1,142 +1,201 @@
-'use client';
-import React from 'react';
-import { useRouter } from 'next/navigation';
-import Navbar from '../layout/Navbar';
-import Footer from '../layout/Footer';
+"use client";
 
+import React from "react";
+import {
+  Calendar,
+  Clock,
+  FileText,
+  User,
+  Ruler,
+  Smartphone,
+  CheckCircle,
+} from "lucide-react";
+import { useRouter } from "next/navigation";
 
-const HomePage = () => {
+export default function RenovateProLanding() {
   const router = useRouter();
+  const features = [
+    {
+      icon: <Ruler className="w-8 h-8" />,
+      title: "Precision Measurements",
+      description:
+        "Laser-accurate measurements ensuring your renovation plans are perfect",
+    },
+    {
+      icon: <FileText className="w-8 h-8" />,
+      title: "Digital Blueprints",
+      description: "CAD-quality digital blueprints delivered in multiple formats",
+    },
+    {
+      icon: <Clock className="w-8 h-8" />,
+      title: "Fast Turnaround",
+      description: "Receive your detailed blueprints within 24-48 hours",
+    },
+    {
+      icon: <User className="w-8 h-8" />,
+      title: "Expert Surveyors",
+      description: "Certified professionals with years of experience",
+    },
+    {
+      icon: <Calendar className="w-8 h-8" />,
+      title: "Online Booking",
+      description: "Schedule appointments at your convenience, 24/7",
+    },
+    {
+      icon: <Smartphone className="w-8 h-8" />,
+      title: "Mobile-Friendly",
+      description: "Access your blueprints anywhere, on any device",
+    },
+  ];
+
+  const steps = [
+    {
+      number: "01",
+      title: "Book Online Appointment",
+      description:
+        "Choose your preferred date and time through our easy booking system",
+    },
+    {
+      number: "02",
+      title: "Expert Visits Your Site",
+      description:
+        "Our certified surveyor arrives on time with professional equipment",
+    },
+    {
+      number: "03",
+      title: "Receive Digital Blueprint",
+      description:
+        "Get detailed CAD blueprints delivered to your email within 48 hours",
+    },
+    {
+      number: "04",
+      title: "Start Your Renovation",
+      description:
+        "Begin your project with confidence using accurate measurements",
+    },
+  ];
+
+  const trustIndicators = [
+    { label: "Serving Mumbai since", value: "2023" },
+    { label: "Projects Completed", value: "1000+" },
+    { label: "Customer Rating", value: "4.9/5" },
+  ];
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100">
-      {/* Use the unified Navbar */}
-      <Navbar isAuthenticated={false} />
-      
+    <div className="min-h-screen bg-white">
+
       {/* Hero Section */}
-      <section className="py-16 md:py-28">
-        <div className="container mx-auto px-4 flex flex-col md:flex-row items-center">
-          <div className="md:w-1/2 mb-12 md:mb-0">
-            <h1 className="text-4xl md:text-5xl font-bold text-gray-800 leading-tight mb-6">
-              Streamline Your Renovation Projects From Survey to Blueprint
+      <section className="pt-24 pb-16 px-4 bg-gradient-to-br from-blue-50 to-white">
+        <div className="max-w-7xl mx-auto grid md:grid-cols-2 gap-12 items-center">
+          <div className="space-y-6">
+            <h1 className="text-4xl md:text-6xl font-bold text-gray-900">
+              Professional Room Measurement Service
             </h1>
-            <p className="text-lg text-gray-600 mb-8 max-w-lg">
-              Connect with professional auditors, digitize your property surveys, 
-              and generate accurate blueprints automatically - all in one platform.
+            <p className="text-xl text-gray-600">
+              Accurate blueprints for your renovation projects by certified
+              professionals.
             </p>
-            <div className="flex flex-col sm:flex-row space-y-4 sm:space-y-0 sm:space-x-4">
+            <div className="flex gap-4">
               <button 
-                className="px-8 py-3 bg-blue-600 text-white font-medium rounded-lg hover:bg-blue-700 transition shadow-lg"
-                onClick={() => router.push('/surveybooking')}
-              >
+              onClick={() => router.push("/bookingsurvey")}
+              className="bg-blue-600 text-white px-8 py-4 rounded-lg hover:bg-blue-700">
                 Book a Survey
               </button>
-              <button className="px-8 py-3 bg-white text-blue-600 font-medium rounded-lg border border-blue-200 hover:bg-blue-50 transition">
-                Watch Demo
+              <button className="border-2 border-blue-600 text-blue-600 px-8 py-4 rounded-lg">
+                Learn More
               </button>
             </div>
           </div>
-          
-          <div className="md:w-1/2 flex justify-center">
-            <div className="relative">
-              <div className="bg-gray-200 border-2 border-dashed rounded-xl w-80 h-80 md:w-96 md:h-96 flex items-center justify-center">
-                <span className="text-gray-500">App Preview Visualization</span>
+
+          <div className="bg-blue-100 p-8 rounded-2xl shadow-xl">
+            <div className="bg-white p-6 rounded-lg space-y-3">
+              <div className="flex justify-between border-b pb-2">
+                <span className="text-sm font-semibold text-gray-500">
+                  FLOOR PLAN
+                </span>
+                <Ruler className="text-blue-600" />
               </div>
-              <div className="absolute -bottom-6 -right-6 bg-blue-500 text-white px-6 py-3 rounded-lg shadow-lg">
-                AI-Powered Blueprints
+              <p>Living Room: 4.2m × 3.8m</p>
+              <p>Kitchen: 3.5m × 2.9m</p>
+              <p>Bedroom: 3.9m × 3.2m</p>
+              <div className="flex items-center text-blue-600 mt-4">
+                <CheckCircle className="mr-2" /> Verified Measurements
               </div>
             </div>
           </div>
         </div>
       </section>
 
-      {/* Value Proposition Section */}
-      <section id="features" className="py-16 bg-white">
-        <div className="container mx-auto px-4">
-          <div className="text-center mb-16">
-            <h2 className="text-3xl font-bold text-gray-800 mb-4">Transform Your Workflow</h2>
-            <p className="text-gray-600 max-w-2xl mx-auto">
-              Our integrated solution connects all stakeholders and automates critical 
-              steps in the renovation planning process
-            </p>
-          </div>
-          
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-            {[
-              { 
-                title: "1-Click Survey Booking", 
-                desc: "Customers schedule on-site audits with certified professionals in seconds" 
-              },
-              { 
-                title: "Digital Audit Tools", 
-                desc: "Auditors capture precise measurements and property data through our mobile app" 
-              },
-              { 
-                title: "Instant Blueprints", 
-                desc: "AI transforms survey data into accurate preliminary designs automatically" 
-              }
-            ].map((item, index) => (
-              <div key={index} className="bg-gray-50 p-6 rounded-xl border border-gray-100 hover:shadow-md transition">
-                <div className="w-12 h-12 rounded-full bg-blue-100 flex items-center justify-center text-blue-600 font-bold mb-4">
-                  {index + 1}
-                </div>
-                <h3 className="text-xl font-semibold text-gray-800 mb-2">{item.title}</h3>
-                <p className="text-gray-600">{item.desc}</p>
+      {/* Trust Indicators */}
+      <section className="bg-blue-600 text-white py-12">
+        <div className="max-w-7xl mx-auto grid md:grid-cols-3 text-center gap-8">
+          {trustIndicators.map((item, i) => (
+            <div key={i}>
+              <div className="text-4xl font-bold">{item.value}</div>
+              <div className="text-blue-100">{item.label}</div>
+            </div>
+          ))}
+        </div>
+      </section>
+
+      {/* Features */}
+      <section id="features" className="py-20 px-4">
+        <div className="max-w-7xl mx-auto">
+          <h2 className="text-4xl font-bold text-center mb-12">
+            Why Choose RenovatePro?
+          </h2>
+          <div className="grid md:grid-cols-3 gap-8">
+            {features.map((f, i) => (
+              <div
+                key={i}
+                className="p-8 bg-white shadow-lg rounded-xl hover:shadow-xl"
+              >
+                <div className="text-blue-600 mb-4">{f.icon}</div>
+                <h3 className="text-xl font-semibold mb-2">{f.title}</h3>
+                <p className="text-gray-600">{f.description}</p>
               </div>
             ))}
           </div>
         </div>
       </section>
 
-      {/* How It Works Section */}
-      <section id="how-it-works" className="py-16 bg-gray-50">
-        <div className="container mx-auto px-4">
-          <div className="text-center mb-16">
-            <h2 className="text-3xl font-bold text-gray-800 mb-4">How It Works</h2>
-            <p className="text-gray-600 max-w-2xl mx-auto">
-              Simple steps from survey request to blueprint delivery
-            </p>
-          </div>
-          
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
-            {[
-              { step: "1", title: "Book Survey", desc: "Schedule your property assessment" },
-              { step: "2", title: "On-site Audit", desc: "Professional auditor visits your property" },
-              { step: "3", title: "Data Processing", desc: "AI analyzes measurements and data" },
-              { step: "4", title: "Get Blueprint", desc: "Receive your automated design" }
-            ].map((item, index) => (
-              <div key={index} className="text-center">
-                <div className="w-16 h-16 rounded-full bg-blue-600 text-white flex items-center justify-center text-xl font-bold mx-auto mb-4">
-                  {item.step}
+      {/* How It Works */}
+      <section id="how-it-works" className="bg-gray-50 py-20 px-4">
+        <div className="max-w-7xl mx-auto">
+          <h2 className="text-4xl font-bold text-center mb-12">
+            How It Works
+          </h2>
+          <div className="grid md:grid-cols-4 gap-8">
+            {steps.map((step, i) => (
+              <div key={i} className="bg-white p-8 rounded-xl shadow-lg">
+                <div className="text-5xl text-blue-100 font-bold">
+                  {step.number}
                 </div>
-                <h3 className="text-lg font-semibold text-gray-800 mb-2">{item.title}</h3>
-                <p className="text-gray-600 text-sm">{item.desc}</p>
+                <h3 className="text-xl font-semibold mt-4">
+                  {step.title}
+                </h3>
+                <p className="text-gray-600 mt-2">{step.description}</p>
               </div>
             ))}
           </div>
         </div>
       </section>
 
-      {/* CTA Section */}
-      <section className="py-16 bg-gradient-to-r from-blue-500 to-blue-700">
-        <div className="container mx-auto px-4 text-center">
-          <h2 className="text-3xl font-bold text-white mb-4">Ready to Transform Your Renovation Process?</h2>
-          <p className="text-blue-100 max-w-2xl mx-auto mb-8">
-            Join hundreds of professionals already using our platform to save time and reduce errors
-          </p>
-          <button 
-            className="px-8 py-3 bg-white text-blue-600 font-bold rounded-lg hover:bg-gray-100 transition shadow-lg"
-            onClick={() => router.push('/register')}
-          >
-            Get Started Today
-          </button>
-        </div>
+      {/* CTA */}
+      <section className="bg-blue-600 text-white py-20 text-center">
+        <h2 className="text-4xl font-bold mb-6">
+          Ready to Start Your Renovation?
+        </h2>
+        <p className="text-blue-100 mb-8">
+          Book a professional survey and receive blueprints within 48 hours.
+        </p>
+        <button 
+         onClick={() => router.push("/bookingsurvey")}
+        className="bg-white text-blue-600 px-8 py-4 rounded-lg font-semibold">
+          Book Your Survey Now
+        </button>
       </section>
 
-      {/* Use the unified Footer */}
-      <Footer />
     </div>
   );
-};
-
-export default HomePage;
+}
