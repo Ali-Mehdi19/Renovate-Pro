@@ -1,8 +1,10 @@
 'use client';
 import React, { useState, useEffect } from 'react';
+import { useRouter } from 'next/navigation'; // Add this import
 import { Wifi, WifiOff, Loader2, MapPin, AlertCircle, CheckCircle2, Fingerprint } from 'lucide-react';
 
 export default function SurveyorAuth() {
+  const router = useRouter(); // Add this hook
   const [surveyorId, setSurveyorId] = useState('');
   const [pin, setPin] = useState('');
   const [rememberMe, setRememberMe] = useState(false);
@@ -218,6 +220,11 @@ export default function SurveyorAuth() {
     setIsLoading(false);
   };
 
+  // Add this function to handle new survey navigation
+  const handleNewSurvey = () => {
+    router.push('/surveyordashboard');
+  };
+
   const formatLastSync = () => {
     if (!lastSync) return 'Never';
     const diff = Date.now() - lastSync.getTime();
@@ -308,7 +315,10 @@ export default function SurveyorAuth() {
 
           {/* Quick Actions */}
           <div className="grid grid-cols-2 gap-4">
-            <button className="p-6 bg-white rounded-xl shadow-md hover:shadow-lg transition-shadow">
+            <button 
+              onClick={handleNewSurvey} // Add onClick handler
+              className="p-6 bg-white rounded-xl shadow-md hover:shadow-lg transition-shadow cursor-pointer"
+            >
               <div className="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-3">
                 <MapPin className="w-6 h-6 text-blue-600" />
               </div>

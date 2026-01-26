@@ -36,7 +36,7 @@ const LoginDemo = () => {
       name: 'Planner',
       description: 'Create blueprints',
       icon: '📐',
-      loginRoute: '/planner/login',
+      loginRoute: '/plannerlogin',
       dashboardRoute: '/planner/dashboard'
     }
   ];
