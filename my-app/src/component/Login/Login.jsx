@@ -44,7 +44,7 @@ const LoginDemo = () => {
   const handleRoleSelect = (roleId) => {
     setSelectedRole(roleId);
     const role = roles.find(r => r.id === roleId);
-    
+
     // Redirect to role-specific login page for surveyor and planner
     if (roleId === 'surveyor' || roleId === 'planner') {
       router.push(role.loginRoute);
@@ -66,8 +66,13 @@ const LoginDemo = () => {
     setTimeout(() => {
       if (formData.email && formData.password) {
         const roleRoute = roles.find(r => r.id === selectedRole)?.dashboardRoute;
+
+        // [MODIFIED] Store token to allow access to protected routes
+        localStorage.setItem('token', 'mock-customer-token');
+        localStorage.setItem('userRole', selectedRole);
+
         setSuccess(`Login successful! Redirecting to ${roleRoute}...`);
-        
+
         // Redirect after showing success message
         setTimeout(() => {
           router.push(roleRoute);
@@ -107,16 +112,14 @@ const LoginDemo = () => {
                 key={role.id}
                 type="button"
                 onClick={() => handleRoleSelect(role.id)}
-                className={`relative flex flex-col items-center p-4 rounded-lg border-2 transition-all ${
-                  selectedRole === role.id
+                className={`relative flex flex-col items-center p-4 rounded-lg border-2 transition-all ${selectedRole === role.id
                     ? 'border-blue-600 bg-blue-50'
                     : 'border-gray-200 bg-white hover:border-gray-300'
-                }`}
+                  }`}
               >
                 <span className="text-2xl mb-2">{role.icon}</span>
-                <span className={`text-xs font-medium ${
-                  selectedRole === role.id ? 'text-blue-700' : 'text-gray-700'
-                }`}>
+                <span className={`text-xs font-medium ${selectedRole === role.id ? 'text-blue-700' : 'text-gray-700'
+                  }`}>
                   {role.name}
                 </span>
                 {selectedRole === role.id && (
@@ -132,7 +135,7 @@ const LoginDemo = () => {
           <p className="text-xs text-gray-500 text-center">
             {roles.find(r => r.id === selectedRole)?.description}
           </p>
-          
+
           {/* Helper text for redirected roles */}
           {(selectedRole === 'surveyor' || selectedRole === 'planner') && (
             <div className="bg-blue-50 border border-blue-200 rounded-lg p-3 mt-2">
