@@ -76,12 +76,7 @@ const availableSlots = [
 ];
 
 const CustomerDashboard = () => {
-    const [currentView, setCurrentView] = useState('login');
-    const [loginMethod, setLoginMethod] = useState('email');
-    const [email, setEmail] = useState('');
-    const [password, setPassword] = useState('');
-    const [bookingRef, setBookingRef] = useState('');
-    const [user, setUser] = useState(null);
+    const [user, setUser] = useState(mockUser);
     const [appointments, setAppointments] = useState(mockAppointments);
     const [documents, setDocuments] = useState(mockDocuments);
     const [showPastAppointments, setShowPastAppointments] = useState(false);
@@ -94,22 +89,11 @@ const CustomerDashboard = () => {
     const [activeTab, setActiveTab] = useState('dashboard');
     const [profileData, setProfileData] = useState(mockUser);
 
-    // Check for existing token on component mount
-    useEffect(() => {
-        const token = localStorage.getItem('token');
-        if (token) {
-            setUser(mockUser);
-            setCurrentView('dashboard');
-        }
-    }, []);
-
     // Simulate WebSocket connection
     useEffect(() => {
-        if (user) {
-            const timer = setTimeout(() => setWsConnected(true), 1000);
-            return () => clearTimeout(timer);
-        }
-    }, [user]);
+        const timer = setTimeout(() => setWsConnected(true), 1000);
+        return () => clearTimeout(timer);
+    }, []);
 
     // Simulate real-time updates
     useEffect(() => {
@@ -125,23 +109,9 @@ const CustomerDashboard = () => {
         }
     }, [wsConnected]);
 
-    const handleLogin = (e) => {
-        e.preventDefault();
-        // In a real app, you would validate credentials here
-        const token = 'mock-jwt-token-' + Date.now();
-        localStorage.setItem('token', token);
-        setUser(mockUser);
-        setCurrentView('dashboard');
-    };
-
     const handleLogout = () => {
-        localStorage.removeItem('token');
-        setUser(null);
-        setCurrentView('login');
-        setActiveTab('dashboard');
-        setEmail('');
-        setPassword('');
-        setBookingRef('');
+        alert('Logout functionality would be handled by the parent component');
+        // In a real app, you would call a logout API and redirect
     };
 
     const handleDownload = (docName, format) => {
@@ -216,159 +186,6 @@ const CustomerDashboard = () => {
         }
     };
 
-    // Login View
-    if (currentView === 'login') {
-        return (
-            <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 flex items-center justify-center p-4">
-                <div className="bg-white rounded-lg shadow-xl w-full max-w-md p-8">
-                    <div className="text-center mb-8">
-                        <h1 className="text-3xl font-bold text-gray-800">Customer Portal</h1>
-                        <p className="text-gray-600 mt-2">Access your appointments and documents</p>
-                    </div>
-
-                    <div className="flex gap-2 mb-6">
-                        <button
-                            onClick={() => setLoginMethod('email')}
-                            className={`flex-1 py-2 rounded-lg transition ${loginMethod === 'email'
-                                    ? 'bg-blue-600 text-white'
-                                    : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
-                                }`}
-                        >
-                            Email Login
-                        </button>
-                        <button
-                            onClick={() => setLoginMethod('booking')}
-                            className={`flex-1 py-2 rounded-lg transition ${loginMethod === 'booking'
-                                    ? 'bg-blue-600 text-white'
-                                    : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
-                                }`}
-                        >
-                            Booking Reference
-                        </button>
-                    </div>
-
-                    <form onSubmit={handleLogin} className="space-y-4">
-                        {loginMethod === 'email' ? (
-                            <>
-                                <div>
-                                    <label className="block text-sm font-medium text-gray-700 mb-1">
-                                        Email Address
-                                    </label>
-                                    <div className="relative">
-                                        <Mail className="absolute left-3 top-3 h-5 w-5 text-gray-400" />
-                                        <input
-                                            type="email"
-                                            value={email}
-                                            onChange={(e) => setEmail(e.target.value)}
-                                            className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                                            placeholder="you@example.com"
-                                            required
-                                        />
-                                    </div>
-                                </div>
-                                <div>
-                                    <label className="block text-sm font-medium text-gray-700 mb-1">
-                                        Password
-                                    </label>
-                                    <div className="relative">
-                                        <Lock className="absolute left-3 top-3 h-5 w-5 text-gray-400" />
-                                        <input
-                                            type="password"
-                                            value={password}
-                                            onChange={(e) => setPassword(e.target.value)}
-                                            className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                                            placeholder="••••••••"
-                                            required
-                                        />
-                                    </div>
-                                </div>
-                                <div className="text-right">
-                                    <button
-                                        type="button"
-                                        onClick={() => setCurrentView('forgot-password')}
-                                        className="text-sm text-blue-600 hover:underline"
-                                    >
-                                        Forgot password?
-                                    </button>
-                                </div>
-                            </>
-                        ) : (
-                            <div>
-                                <label className="block text-sm font-medium text-gray-700 mb-1">
-                                    Booking Reference
-                                </label>
-                                <input
-                                    type="text"
-                                    value={bookingRef}
-                                    onChange={(e) => setBookingRef(e.target.value)}
-                                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                                    placeholder="BK-123456"
-                                    required
-                                />
-                            </div>
-                        )}
-
-                        <button
-                            type="submit"
-                            className="w-full bg-blue-600 text-white py-2 rounded-lg hover:bg-blue-700 transition font-medium"
-                        >
-                            Sign In
-                        </button>
-                    </form>
-                </div>
-            </div>
-        );
-    }
-
-    // Forgot Password View
-    if (currentView === 'forgot-password') {
-        return (
-            <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 flex items-center justify-center p-4">
-                <div className="bg-white rounded-lg shadow-xl w-full max-w-md p-8">
-                    <h2 className="text-2xl font-bold text-gray-800 mb-2">Reset Password</h2>
-                    <p className="text-gray-600 mb-6">Enter your email to receive a password reset link</p>
-
-                    <form onSubmit={(e) => {
-                        e.preventDefault();
-                        alert('Password reset link sent to your email!');
-                        setCurrentView('login');
-                    }} className="space-y-4">
-                        <div>
-                            <label className="block text-sm font-medium text-gray-700 mb-1">
-                                Email Address
-                            </label>
-                            <div className="relative">
-                                <Mail className="absolute left-3 top-3 h-5 w-5 text-gray-400" />
-                                <input
-                                    type="email"
-                                    className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                                    placeholder="you@example.com"
-                                    required
-                                />
-                            </div>
-                        </div>
-
-                        <button
-                            type="submit"
-                            className="w-full bg-blue-600 text-white py-2 rounded-lg hover:bg-blue-700 transition font-medium"
-                        >
-                            Send Reset Link
-                        </button>
-
-                        <button
-                            type="button"
-                            onClick={() => setCurrentView('login')}
-                            className="w-full text-gray-600 hover:text-gray-800 transition"
-                        >
-                            Back to Login
-                        </button>
-                    </form>
-                </div>
-            </div>
-        );
-    }
-
-    // Main Dashboard View
     return (
         <div className="min-h-screen bg-gray-50">
             <header className="bg-white shadow-sm border-b">
