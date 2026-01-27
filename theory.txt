@@ -48,3 +48,743 @@ export const MeasurementInput = () => {
 1. The Geometric Algorithm (Logic)The algorithm follows a "Vector-to-Coordinate" approach. Every wall is treated as a vector with a magnitude ($Length\_m$) and a direction (relative angle).Initial Origin: The first vertex is always set at $(0, 0)$.Angle Accumulation: The interior angle provided by the surveyor is used to calculate the absolute heading for each subsequent wall.Trigonometric Projection: The next coordinate is calculated using:$x_{next} = x_{current} + L \cdot \cos(\theta)$$y_{next} = y_{current} + L \cdot \sin(\theta)$
 
 
+To achieve the **Scalability (05)** and **Fault Isolation** required for a computationally heavy system like **RenovatePro**, you should implement a **Microservices-ready Monolith** or a full **Microservices Architecture** using **Node.js, Express, and MongoDB**.
+
+Below is the detailed architectural breakdown and file structure.
+
+---
+
+## **1. System Architecture & Workflow**
+
+The system operates on a **Decoupled Architecture**. The **API Gateway** (Express) handles lightweight requests (auth, appointments), while the **Blueprint Generator Service** handles the geometric logic independently to prevent blocking the main event loop.
+
+### **The "Renovation Pipeline" Workflow:**
+
+1. 
+**Authentication**: Users authenticate via JWT; the **RBAC Middleware** ensures only Surveyors can submit data and only Planners can export blueprints.
+
+
+2. 
+**Data Ingestion**: The **Surveyor App** sends measurements to the `SurveyController`.
+
+
+3. 
+**Integrity Seal**: The **Service Layer** calculates a **SHA-256 Checksum** of the raw data before saving to **MongoDB**.
+
+
+4. 
+**Asynchronous Trigger**: The `BlueprintService` is triggered (via a message queue or internal event) to begin **Geometric Resolution** and **SVG Rendering**.
+
+
+5. 
+**Notification**: Once the `Blueprint` document is created, the **Planner Dashboard** is notified via WebSockets.
+
+
+
+---
+
+## **2. Backend Folder Structure**
+
+This structure follows the **Separation of Concerns** principle, isolating business logic (Services) from HTTP handling (Controllers).
+
+```text
+/renovate-pro-backend
+├── /config                 # Database and environment configurations
+├── /controllers            # Handles incoming HTTP requests
+[cite_start]│   ├── authController.js   # JWT and Login logic [cite: 124]
+[cite_start]│   ├── appointmentController.js # Scheduling and assignment [cite: 124]
+[cite_start]│   ├── surveyController.js # Data capture and validation [cite: 125]
+[cite_start]│   └── plannerController.js # Blueprint access and exports [cite: 134]
+├── /middlewares            # Security and validation filters
+[cite_start]│   ├── authMiddleware.js   # JWT verification & RBAC [cite: 81, 85]
+│   └── errorMiddleware.js  # Global error handling
+[cite_start]├── /models                 # MongoDB/Mongoose schemas [cite: 93]
+│   ├── User.js
+│   ├── Appointment.js
+[cite_start]│   ├── SurveyData.js       # Embedded room array & Checksum [cite: 95]
+│   └── Blueprint.js
+├── /services               # Core Business Logic (The "Brain")
+[cite_start]│   ├── geometryService.js  # Coordinate and vertex calculations [cite: 59, 128]
+[cite_start]│   ├── svgService.js       # SVG rendering and dimensioning [cite: 60, 129]
+[cite_start]│   └── notificationService.js # WebSocket/Email alerts [cite: 60]
+├── /utils                  # Helpers (Hashing, Date formatting)
+├── server.js               # Entry point (Express setup)
+└── .env                    # Secrets and Port configs
+
+```
+
+---
+
+## **3. Implementation Details**
+
+### **A. Middleware (Security & RBAC)**
+
+The **Role-Based Access Control (RBAC)** is critical for protecting proprietary project data.
+
+* 
+**Auth Middleware**: Extracts the JWT from the header, verifies it, and attaches the user role to the `req` object.
+
+
+* 
+**Role Check**: Rejects requests if a Surveyor tries to access a Planner-only route (e.g., `GET /api/blueprints`).
+
+
+
+### **B. Controllers (Request Handling)**
+
+* 
+**SurveyController**: Validates that measurements (Length_m) are within the **0.1m to 50m** range check.
+
+
+* 
+**AppointmentController**: Manages the **60% reduction in lead time** by automating surveyor assignments.
+
+
+
+### **C. Services (The Heavy Lifting)**
+
+* 
+**GeometryService**: Resolves wall lengths and angles into Cartesian  coordinates, accounting for **geometric closures**.
+
+
+* 
+**SVGService**: Generates the dimension lines, labels, and vector paths for the final blueprint export (SVG/PDF).
+
+
+
+---
+
+## **4. Strategic Implementation Checklist**
+
+| Layer | Component | Objective/Metric |
+| --- | --- | --- |
+| **Model** | **Embedded Rooms** | High-speed read performance for Planners.
+
+ |
+| **Controller** | **Validation** | Near-zero transcription errors (02).
+
+ |
+| **Service** | **Checksum Logic** | Non-repudiation of field data (R3 mitigation).
+
+ |
+| **Architecture** | **Containerization** | Using Docker for consistent scaling across environments.
+
+ |
+
+---
+
+### **Next Step for You**
+
+Would you like me to provide the **`geometryService.js`** logic specifically for handling **non-rectangular room shapes** using vertex resolution, or should we set up the **Docker Compose** file for your MongoDB and Node.js environment?
+
+To achieve the **Scalability (05)** and **Fault Isolation** required for a computationally heavy system like **RenovatePro**, you should implement a **Microservices-ready Monolith** or a full **Microservices Architecture** using **Node.js, Express, and MongoDB**.
+
+Below is the detailed architectural breakdown and file structure.
+
+---
+
+## **1. System Architecture & Workflow**
+
+The system operates on a **Decoupled Architecture**. The **API Gateway** (Express) handles lightweight requests (auth, appointments), while the **Blueprint Generator Service** handles the geometric logic independently to prevent blocking the main event loop.
+
+### **The "Renovation Pipeline" Workflow:**
+
+1. 
+**Authentication**: Users authenticate via JWT; the **RBAC Middleware** ensures only Surveyors can submit data and only Planners can export blueprints.
+
+
+2. 
+**Data Ingestion**: The **Surveyor App** sends measurements to the `SurveyController`.
+
+
+3. 
+**Integrity Seal**: The **Service Layer** calculates a **SHA-256 Checksum** of the raw data before saving to **MongoDB**.
+
+
+4. 
+**Asynchronous Trigger**: The `BlueprintService` is triggered (via a message queue or internal event) to begin **Geometric Resolution** and **SVG Rendering**.
+
+
+5. 
+**Notification**: Once the `Blueprint` document is created, the **Planner Dashboard** is notified via WebSockets.
+
+
+
+---
+
+## **2. Backend Folder Structure**
+
+This structure follows the **Separation of Concerns** principle, isolating business logic (Services) from HTTP handling (Controllers).
+
+```text
+/renovate-pro-backend
+├── /config                 # Database and environment configurations
+├── /controllers            # Handles incoming HTTP requests
+[cite_start]│   ├── authController.js   # JWT and Login logic [cite: 124]
+[cite_start]│   ├── appointmentController.js # Scheduling and assignment [cite: 124]
+[cite_start]│   ├── surveyController.js # Data capture and validation [cite: 125]
+[cite_start]│   └── plannerController.js # Blueprint access and exports [cite: 134]
+├── /middlewares            # Security and validation filters
+[cite_start]│   ├── authMiddleware.js   # JWT verification & RBAC [cite: 81, 85]
+│   └── errorMiddleware.js  # Global error handling
+[cite_start]├── /models                 # MongoDB/Mongoose schemas [cite: 93]
+│   ├── User.js
+│   ├── Appointment.js
+[cite_start]│   ├── SurveyData.js       # Embedded room array & Checksum [cite: 95]
+│   └── Blueprint.js
+├── /services               # Core Business Logic (The "Brain")
+[cite_start]│   ├── geometryService.js  # Coordinate and vertex calculations [cite: 59, 128]
+[cite_start]│   ├── svgService.js       # SVG rendering and dimensioning [cite: 60, 129]
+[cite_start]│   └── notificationService.js # WebSocket/Email alerts [cite: 60]
+├── /utils                  # Helpers (Hashing, Date formatting)
+├── server.js               # Entry point (Express setup)
+└── .env                    # Secrets and Port configs
+
+```
+
+---
+
+## **3. Implementation Details**
+
+### **A. Middleware (Security & RBAC)**
+
+The **Role-Based Access Control (RBAC)** is critical for protecting proprietary project data.
+
+* 
+**Auth Middleware**: Extracts the JWT from the header, verifies it, and attaches the user role to the `req` object.
+
+
+* 
+**Role Check**: Rejects requests if a Surveyor tries to access a Planner-only route (e.g., `GET /api/blueprints`).
+
+
+
+### **B. Controllers (Request Handling)**
+
+* 
+**SurveyController**: Validates that measurements (Length_m) are within the **0.1m to 50m** range check.
+
+
+* 
+**AppointmentController**: Manages the **60% reduction in lead time** by automating surveyor assignments.
+
+
+
+### **C. Services (The Heavy Lifting)**
+
+* 
+**GeometryService**: Resolves wall lengths and angles into Cartesian  coordinates, accounting for **geometric closures**.
+
+
+* 
+**SVGService**: Generates the dimension lines, labels, and vector paths for the final blueprint export (SVG/PDF).
+
+
+
+---
+
+## **4. Strategic Implementation Checklist**
+
+| Layer | Component | Objective/Metric |
+| --- | --- | --- |
+| **Model** | **Embedded Rooms** | High-speed read performance for Planners.
+
+ |
+| **Controller** | **Validation** | Near-zero transcription errors (02).
+
+ |
+| **Service** | **Checksum Logic** | Non-repudiation of field data (R3 mitigation).
+
+ |
+| **Architecture** | **Containerization** | Using Docker for consistent scaling across environments.
+
+ |
+
+---
+
+### **Next Step for You**
+
+Would you like me to provide the **`geometryService.js`** logic specifically for handling **non-rectangular room shapes** using vertex resolution, or should we set up the **Docker Compose** file for your MongoDB and Node.js environment?
+
+Adding dimension lines and arrows directly onto the SVG is crucial for meeting **Objective 04 (Dimensionally Accurate Blueprints)**. This metadata allows project planners to verify lengths at a glance without needing to manually calculate them from coordinates.
+
+To implement this in your **Blueprint Generator Service**, the algorithm must calculate a "perpendicular offset" for each wall to place the dimension line outside the room boundary.
+
+### **1. Geometric Logic for Dimension Lines**
+
+For every wall segment defined by two vertices ( to ), the system performs the following:
+
+1. 
+**Midpoint Calculation**: Find the center of the wall to place the text label.
+
+
+2. **Perpendicular Vector**: Calculate a normalized vector perpendicular to the wall direction.
+3. 
+**Offsetting**: Move the dimension line and text outward by a fixed distance (e.g.,  units) so it doesn't overlap with the wall.
+
+
+
+---
+
+### **2. SVG Dimension Line Generator (Node.js)**
+
+Here is the expanded logic to be integrated into your `svgRenderer.js`. This code generates the arrows and the text label for each wall segment.
+
+```javascript
+// services/svgRenderer.js
+
+const generateDimensionLine = (v1, v2, length) => {
+    const offset = 25; // Distance from the wall
+    
+    // 1. Calculate the direction vector of the wall
+    const dx = v2.x - v1.x;
+    const dy = v2.y - v1.y;
+    const dist = Math.sqrt(dx * dx + dy * dy);
+    
+    // 2. Calculate the normal (perpendicular) vector
+    const nx = -dy / dist;
+    const ny = dx / dist;
+    
+    // 3. Offset coordinates for the dimension line
+    const x1 = (v1.x * 100) + nx * offset;
+    const y1 = (v1.y * 100) + ny * offset;
+    const x2 = (v2.x * 100) + nx * offset;
+    const y2 = (v2.y * 100) + ny * offset;
+    
+    // 4. Midpoint for the text label
+    const midX = (x1 + x2) / 2;
+    const midY = (y1 + y2) / 2;
+
+    return `
+        <line x1="${x1}" y1="${y1}" x2="${x2}" y2="${y2}" stroke="blue" stroke-width="1" stroke-dasharray="4" />
+        <circle cx="${x1}" cy="${y1}" r="2" fill="blue" />
+        <circle cx="${x2}" cy="${y2}" r="2" fill="blue" />
+        <text x="${midX}" y="${midY - 5}" font-size="12" fill="blue" text-anchor="middle">
+            ${length.toFixed(2)}m
+        </text>
+    `;
+};
+
+```
+
+---
+
+### **3. Integrating Metadata into the Final SVG**
+
+The `generateSVG` function now loops through the vertices to add these annotations for every wall captured in the `SURVEY_DATA`.
+
+```javascript
+const generateCompleteBlueprint = (vertices, roomData) => {
+    let annotations = "";
+    
+    for (let i = 0; i < vertices.length; i++) {
+        const v1 = vertices[i];
+        const v2 = vertices[(i + 1) % vertices.length]; // Loop back to start for closure
+        annotations += generateDimensionLine(v1, v2, roomData[i].length_m);
+    }
+
+    const pathData = vertices.map((v, i) => `${i === 0 ? 'M' : 'L'} ${v.x * 100} ${v.y * 100}`).join(' ');
+
+    return `
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="-1000 -1000 2000 2000">
+            <path d="${pathData} Z" fill="#f9f9f9" stroke="black" stroke-width="3" />
+            ${annotations}
+        </svg>
+    `;
+};
+
+```
+
+---
+
+### **Technical Benefits for Your Workflow**
+
+* 
+**Reduced Planner Effort (Objective 01)**: Planners no longer need to manually annotate blueprints before sending them to CAD, reducing lead times by .
+
+
+* 
+**CAD Compatibility (FR6)**: Since these are standard SVG `<line>` and `<text>` elements, they are preserved as editable vectors when imported into AutoCAD.
+
+
+* 
+**Validation Verification (02)**: The visual labels act as a second layer of verification against the raw `SURVEY_DATA`.
+
+
+
+**Would you like me to create the PDF conversion service using `PDFKit` or `Puppeteer` so you can offer downloadable, printable reports to the customers?**
+
+To implement the **Blueprint Generator Service**, you need a robust geometric algorithm that converts raw wall measurements and angles into Cartesian  coordinates. This process is the core of your "Microservices Architecture" and is essential for achieving **Objective 04 (Dimensionally Accurate Blueprints)**.
+
+### **1. The Geometric Algorithm (Logic)**
+
+The algorithm follows a "Vector-to-Coordinate" approach. Every wall is treated as a vector with a magnitude () and a direction (relative angle).
+
+* **Initial Origin**: The first vertex is always set at .
+* **Angle Accumulation**: The interior angle provided by the surveyor is used to calculate the absolute heading for each subsequent wall.
+* **Trigonometric Projection**: The next coordinate is calculated using:
+* 
+* 
+
+
+
+---
+
+### **2. Blueprint Service Code (Node.js)**
+
+This service performs the "heavy computation" mentioned in your technical strategy.
+
+```javascript
+// services/geometricCore.js
+
+/**
+ * Resolves a list of room measurements into X, Y coordinates.
+ * @param {Array} roomData - Array of { length_m, angle_deg }
+ * @returns {Array} Array of { x, y } coordinates
+ */
+const resolveVertices = (roomData) => {
+    let vertices = [{ x: 0, y: 0 }]; // Start at origin (0,0)
+    let currentAngle = 0; // Cumulative heading in radians
+
+    roomData.forEach((wall, index) => {
+        // 1. Update the heading based on the wall's interior angle
+        // We subtract the angle to move clockwise or add for anti-clockwise
+        currentAngle += (wall.angle_deg * Math.PI) / 180;
+
+        // 2. Project the next point using trigonometry
+        const lastVertex = vertices[vertices.length - 1];
+        const nextX = lastVertex.x + wall.length_m * Math.cos(currentAngle);
+        const nextY = lastVertex.y + wall.length_m * Math.sin(currentAngle);
+
+        // 3. Store the vertex (except for the final closing point which we handle in POC)
+        if (index < roomData.length - 1) {
+            vertices.push({
+                x: parseFloat(nextX.toFixed(4)), 
+                y: parseFloat(nextY.toFixed(4))
+            });
+        }
+    });
+
+    return vertices;
+};
+
+module.exports = { resolveVertices };
+
+```
+
+---
+
+### **3. SVG Generation (Output Service)**
+
+Once the vertices are calculated, the system translates them into a vector path for export to CAD software (SVG).
+
+```javascript
+// services/svgRenderer.js
+
+const generateSVG = (vertices, roomType) => {
+    // 1. Create the path string from vertices
+    const pathData = vertices.map((v, i) => `${i === 0 ? 'M' : 'L'} ${v.x * 100} ${v.y * 100}`).join(' ');
+    
+    // 2. Wrap in SVG XML structure (FR6)
+    return `
+        <svg xmlns="http://www.w3.org/2000/api/svg" viewBox="-500 -500 1000 1000">
+            <path d="${pathData} Z" fill="none" stroke="black" stroke-width="2" />
+            <text x="0" y="0" font-size="20">${roomType}</text>
+        </svg>
+    `;
+};
+
+```
+
+---
+
+### **4. Addressing Project Risks**
+
+By implementing this specific logic, you address the following risks from your register:
+
+* 
+**Risk R1 (Geometric Failure)**: By using precise trigonometric projections rather than simple 90-degree assumptions, the system handles irregular room shapes accurately.
+
+
+* 
+**Risk R2 (Performance Bottleneck)**: Isolating this logic into a specialized service allows it to scale horizontally, ensuring blueprints are ready within the **1-hour target**.
+
+
+
+### **Next Steps for Development**
+
+* **SVG Metadata**: Would you like me to add the code for generating **Dimension Lines** (arrows showing wall lengths) directly onto the SVG?
+* **Data Export**: Or should we look at the logic to convert these SVG files into **PDF format** for customers?
+
+To implement the **Blueprint Generator Service**, you need a robust geometric algorithm that converts raw wall measurements and angles into Cartesian  coordinates. This process is the core of your "Microservices Architecture" and is essential for achieving **Objective 04 (Dimensionally Accurate Blueprints)**.
+
+### **1. The Geometric Algorithm (Logic)**
+
+The algorithm follows a "Vector-to-Coordinate" approach. Every wall is treated as a vector with a magnitude () and a direction (relative angle).
+
+* **Initial Origin**: The first vertex is always set at .
+* **Angle Accumulation**: The interior angle provided by the surveyor is used to calculate the absolute heading for each subsequent wall.
+* **Trigonometric Projection**: The next coordinate is calculated using:
+* 
+* 
+
+
+
+---
+
+### **2. Blueprint Service Code (Node.js)**
+
+This service performs the "heavy computation" mentioned in your technical strategy.
+
+```javascript
+// services/geometricCore.js
+
+/**
+ * Resolves a list of room measurements into X, Y coordinates.
+ * @param {Array} roomData - Array of { length_m, angle_deg }
+ * @returns {Array} Array of { x, y } coordinates
+ */
+const resolveVertices = (roomData) => {
+    let vertices = [{ x: 0, y: 0 }]; // Start at origin (0,0)
+    let currentAngle = 0; // Cumulative heading in radians
+
+    roomData.forEach((wall, index) => {
+        // 1. Update the heading based on the wall's interior angle
+        // We subtract the angle to move clockwise or add for anti-clockwise
+        currentAngle += (wall.angle_deg * Math.PI) / 180;
+
+        // 2. Project the next point using trigonometry
+        const lastVertex = vertices[vertices.length - 1];
+        const nextX = lastVertex.x + wall.length_m * Math.cos(currentAngle);
+        const nextY = lastVertex.y + wall.length_m * Math.sin(currentAngle);
+
+        // 3. Store the vertex (except for the final closing point which we handle in POC)
+        if (index < roomData.length - 1) {
+            vertices.push({
+                x: parseFloat(nextX.toFixed(4)), 
+                y: parseFloat(nextY.toFixed(4))
+            });
+        }
+    });
+
+    return vertices;
+};
+
+module.exports = { resolveVertices };
+
+```
+
+---
+
+### **3. SVG Generation (Output Service)**
+
+Once the vertices are calculated, the system translates them into a vector path for export to CAD software (SVG).
+
+```javascript
+// services/svgRenderer.js
+
+const generateSVG = (vertices, roomType) => {
+    // 1. Create the path string from vertices
+    const pathData = vertices.map((v, i) => `${i === 0 ? 'M' : 'L'} ${v.x * 100} ${v.y * 100}`).join(' ');
+    
+    // 2. Wrap in SVG XML structure (FR6)
+    return `
+        <svg xmlns="http://www.w3.org/2000/api/svg" viewBox="-500 -500 1000 1000">
+            <path d="${pathData} Z" fill="none" stroke="black" stroke-width="2" />
+            <text x="0" y="0" font-size="20">${roomType}</text>
+        </svg>
+    `;
+};
+
+```
+
+---
+
+### **4. Addressing Project Risks**
+
+By implementing this specific logic, you address the following risks from your register:
+
+* 
+**Risk R1 (Geometric Failure)**: By using precise trigonometric projections rather than simple 90-degree assumptions, the system handles irregular room shapes accurately.
+
+
+* 
+**Risk R2 (Performance Bottleneck)**: Isolating this logic into a specialized service allows it to scale horizontally, ensuring blueprints are ready within the **1-hour target**.
+
+
+
+### **Next Steps for Development**
+
+* **SVG Metadata**: Would you like me to add the code for generating **Dimension Lines** (arrows showing wall lengths) directly onto the SVG?
+* **Data Export**: Or should we look at the logic to convert these SVG files into **PDF format** for customers?
+
+Building on the established requirements, here is the detailed technical breakdown for the **RenovatePro** frontend development. This phase focuses on creating the specific modules identified in the **Work Breakdown Structure (WBS)** and ensuring they meet the **SMART metrics** for efficiency and accuracy.
+
+---
+
+## **1. The Surveyor Mobile Interface (WBS 5.2)**
+
+This interface is a high-performance, mobile-optimized application designed for on-site data capture.
+
+* 
+**Geospatial Dashboard**: Surveyors see assigned appointments in a map view (FR3) to optimize travel across Mumbai locations.
+
+
+* 
+**Rapid-Entry Numeric Keypad**: Fields for `Length_m` and `Height_m` default to a numeric keypad (NFR4) to minimize fatiguing transcription on-site.
+
+
+* 
+**Image Pipeline**: A direct camera integration (FR4) allows for high-resolution photo uploads that are automatically hashed and stored with the room document.
+
+
+* 
+**Real-time Checksum Generation**: As the surveyor finishes a room, the frontend calculates a preliminary hash to ensure data integrity during transmission (R3 mitigation).
+
+
+
+---
+
+## **2. The Planner Dashboard (WBS 5.3)**
+
+This is a high-density data environment where project planners consume the automatically generated blueprints.
+
+* 
+**SVG Interactive Viewer**: Rather than a static PDF, the dashboard renders the **Raw SVG Output** (FR6), allowing planners to interact with room vertices and labels.
+
+
+* 
+**Geometric Layer Toggles**: Planners can toggle between structural walls, door/window features, and dimension lines to clean up the view for specific CAD tasks.
+
+
+* 
+**Bulk Export Module**: Provides one-click exporting of the final blueprint into high-quality **SVG or PDF** formats, and the raw survey data into **JSON or CSV** for integration with external CAD software like AutoCAD.
+
+
+* 
+**Audit Log Viewer**: Displays a full history of the survey, including the time of capture and the system-generated Checksum for verification (NFR5).
+
+
+
+---
+
+## **3. The Customer Booking Interface (WBS 5.1)**
+
+This module prioritizes accessibility and user experience to reduce friction in the initial project lead time.
+
+* 
+**Dynamic Availability Calendar**: A real-time calendar (FR1) that pulls availability from the **Appointment Service** to prevent overbooking.
+
+
+* 
+**Self-Service Management**: Customers can independently reschedule or cancel appointments (FR2) through a secure dashboard.
+
+
+* 
+**WCAG 2.1 AA Compliance**: The interface is built to be fully accessible (NFR1), ensuring users with different abilities can easily navigate the booking process.
+
+
+
+---
+
+## **4. Frontend Technical Requirements & QA**
+
+To meet the targets of **60% faster delivery** and **near-zero errors**, the frontend must adhere to strict engineering standards.
+
+| Requirement | Implementation Detail | Objective |
+| --- | --- | --- |
+| **State Management** | React Context or Redux | To handle complex `SURVEY_DATA` objects across multiple room forms.
+
+ |
+| **Validation Layer** | Client-side Range Checks | To catch errors like  wall lengths before submission (02).
+
+ |
+| **UI Testing** | Cypress/Selenium | To automate the verification of all functional requirements (FR1-FR8).
+
+ |
+| **Latency Check** | Performance Monitoring | Ensuring P95 latency remains under  even when loading complex SVGs (05).
+
+ |
+
+---
+
+### **Next Steps for Development**
+
+* **Component Design**: Would you like me to create the **React code for the Blueprint Layer Toggle** component, which allows planners to filter room features?
+* **Form Validation**: Or should we look at the **Zod schema for the surveyor's input validation**, ensuring all `Length_m` values are within the allowed ranges?
+
+To help you move forward with the **RenovatePro** vision, here is a deeper dive into the technical core of the system: the **Geometric Logic** and the **Security Protocols**.
+
+---
+
+### **1. The Blueprint Generation Engine**
+
+The system uses a dedicated **Blueprint Generator Service** designed to handle heavy computation independently from the rest of the application.
+
+* 
+**Coordinate Resolution**: The engine first calculates vertices, resolving all wall lengths and angles into Cartesian (x, y) coordinates while accounting for geometric closures.
+
+
+* 
+**Vector Path Translation**: These coordinates are then translated into raw SVG paths, including object elements like lines, arcs, and text.
+
+
+* 
+**Automated Styling**: The system automatically adds dimension lines and labels (such as `Room_Type` and `Length_m`).
+
+
+* 
+**Scalability**: Because this process is computationally intensive, it is isolated to allow for horizontal auto-scaling using cloud functions.
+
+
+* 
+**Geometric Risk Mitigation**: To prevent "Geometric Logic Failure" where the system might fail on non-rectangular rooms, a dedicated R&D sprint and Test-Driven Development (TDD) are used for the core math functions.
+
+
+
+---
+
+### **2. Security Design & Compliance**
+
+Given the proprietary nature of project data, security is a primary non-functional requirement (NFR3).
+
+* 
+**Stateless Authentication**: The system utilizes JSON Web Tokens (JWT) for secure session management.
+
+
+* 
+**Role-Based Access Control (RBAC)**: Access is strictly enforced at the API Gateway level; for example, users with the "Surveyor" role are blocked from accessing the blueprint export endpoints.
+
+
+* **Data Protection**:
+* 
+**At Rest**: Sensitive fields, such as customer personally identifiable information (PII), are protected in MongoDB using field-level encryption or Transparent Data Encryption (TDE).
+
+
+* 
+**In Transit**: All communications between the client and the server must use TLS 1.2+ encryption.
+
+
+
+
+* 
+**Auditability**: A dedicated logging service (such as the ELK Stack) captures all critical modifications and security events to ensure compliance and non-repudiation.
+
+
+
+---
+
+### **3. Strategic Integration for Mumbai**
+
+While your initial synopsis covers the broad technical framework, we can align these features with your goal for the **Mumbai market**:
+
+* 
+**Blueprint Export**: The system's ability to export high-quality **SVG files** is crucial for Mumbai planners who need to import data directly into professional CAD software for municipal approvals.
+
+
+* 
+**Checksum Validation**: To maintain the integrity of site data—critical for old Mumbai structures—a hashed checksum (SHA-256) is generated to ensure no data is altered after the surveyor submits it.
+
+
+
+Would you like me to help you draft the "Geometric Proof-of-Concept" plan mentioned in the risk register, or perhaps look into the specific MongoDB schema for "Small Space" room features?

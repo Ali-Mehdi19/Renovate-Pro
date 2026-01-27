@@ -18,7 +18,20 @@ const MOCK_BOOKINGS = {
   '2026-01-22': [12, 16]
 };
 
+import { useRouter } from 'next/navigation';
+
 const AppointmentBooking = () => {
+  const router = useRouter();
+
+  // [NEW] Authentication Check
+  React.useEffect(() => {
+    const token = localStorage.getItem('token');
+    if (!token) {
+      // Redirect to login if no token found
+      router.push('/login');
+    }
+  }, [router]);
+
   const [viewMode, setViewMode] = useState('week');
   const [currentDate, setCurrentDate] = useState(new Date(2026, 0, 18));
   const [selectedDate, setSelectedDate] = useState(null);
@@ -26,7 +39,7 @@ const AppointmentBooking = () => {
   const [showConfirmModal, setShowConfirmModal] = useState(false);
   const [showSuccess, setShowSuccess] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
-  
+
   const [formData, setFormData] = useState({
     name: '',
     email: '',
@@ -47,16 +60,16 @@ const AppointmentBooking = () => {
     const firstDay = new Date(year, month, 1);
     const lastDay = new Date(year, month + 1, 0);
     const days = [];
-    
+
     const startPadding = firstDay.getDay();
     for (let i = 0; i < startPadding; i++) {
       days.push(null);
     }
-    
+
     for (let i = 1; i <= lastDay.getDate(); i++) {
       days.push(new Date(year, month, i));
     }
-    
+
     return days;
   };
 
@@ -64,12 +77,12 @@ const AppointmentBooking = () => {
     const days = [];
     const current = new Date(date);
     current.setDate(current.getDate() - current.getDay());
-    
+
     for (let i = 0; i < 7; i++) {
       days.push(new Date(current));
       current.setDate(current.getDate() + 1);
     }
-    
+
     return days;
   };
 
@@ -85,7 +98,7 @@ const AppointmentBooking = () => {
 
   const getNextAvailable = () => {
     const days = viewMode === 'month' ? getDaysInMonth(currentDate) : getWeekDays(currentDate);
-    
+
     for (const day of days) {
       if (!day || day < new Date()) continue;
       for (const hour of HOURS) {
@@ -105,7 +118,7 @@ const AppointmentBooking = () => {
 
   const validateForm = () => {
     const newErrors = {};
-    
+
     if (!formData.name.trim()) newErrors.name = 'Name is required';
     if (!formData.email.match(/^[^\s@]+@[^\s@]+\.[^\s@]+$/)) {
       newErrors.email = 'Valid email is required';
@@ -117,19 +130,19 @@ const AppointmentBooking = () => {
     if (!formData.projectType) newErrors.projectType = 'Project type is required';
     if (!selectedDate) newErrors.date = 'Please select a date';
     if (selectedTime === null) newErrors.time = 'Please select a time';
-    
+
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
 
   const handleSubmit = async () => {
     if (!validateForm() || !termsAccepted) return;
-    
+
     setIsLoading(true);
-    
+
     // Simulate API call
     await new Promise(resolve => setTimeout(resolve, 1500));
-    
+
     setIsLoading(false);
     setShowConfirmModal(false);
     setShowSuccess(true);
@@ -140,13 +153,13 @@ const AppointmentBooking = () => {
     startDate.setHours(selectedTime, 0, 0);
     const endDate = new Date(startDate);
     endDate.setHours(selectedTime + 2, 0, 0);
-    
+
     alert(`Calendar link for ${type} would be generated here`);
   };
 
   const renderDayView = () => {
     const date = selectedDate || currentDate;
-    
+
     return (
       <div className="bg-white rounded-lg p-6 shadow-sm">
         <div className="text-center mb-6">
@@ -159,7 +172,7 @@ const AppointmentBooking = () => {
             const booked = isTimeBooked(date, hour);
             const isPast = date.toDateString() === new Date().toDateString() && hour < new Date().getHours();
             const isSelected = selectedDate?.toDateString() === date.toDateString() && selectedTime === hour;
-            
+
             return (
               <button
                 key={hour}
@@ -168,13 +181,12 @@ const AppointmentBooking = () => {
                   setSelectedDate(date);
                   setSelectedTime(hour);
                 }}
-                className={`p-4 rounded-lg text-left transition-all ${
-                  isSelected
-                    ? 'bg-blue-600 text-white shadow-lg'
-                    : booked || isPast
+                className={`p-4 rounded-lg text-left transition-all ${isSelected
+                  ? 'bg-blue-600 text-white shadow-lg'
+                  : booked || isPast
                     ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
                     : 'bg-green-50 hover:bg-green-100 text-green-900'
-                }`}
+                  }`}
               >
                 <div className="flex items-center justify-between">
                   <span className="font-medium">
@@ -198,7 +210,7 @@ const AppointmentBooking = () => {
 
   const renderWeekView = () => {
     const days = getWeekDays(currentDate);
-    
+
     return (
       <div className="bg-white rounded-lg shadow-sm overflow-hidden">
         <div className="grid grid-cols-7 border-b">
@@ -213,7 +225,7 @@ const AppointmentBooking = () => {
             const isToday = day.toDateString() === new Date().toDateString();
             const isPast = day < new Date() && !isToday;
             const isSelected = selectedDate?.toDateString() === day.toDateString();
-            
+
             return (
               <div key={idx} className={`border-r border-b min-h-32 p-2 ${isToday ? 'bg-blue-50' : ''}`}>
                 <div className={`text-sm font-medium mb-2 ${isPast ? 'text-gray-400' : ''} ${isSelected ? 'text-blue-600' : ''}`}>
@@ -223,7 +235,7 @@ const AppointmentBooking = () => {
                   {HOURS.slice(0, 4).map(hour => {
                     const booked = isTimeBooked(day, hour);
                     const hourPast = isPast || (isToday && hour < new Date().getHours());
-                    
+
                     return (
                       <button
                         key={hour}
@@ -232,11 +244,10 @@ const AppointmentBooking = () => {
                           setSelectedDate(day);
                           setSelectedTime(hour);
                         }}
-                        className={`w-full text-xs p-1 rounded transition-all ${
-                          booked || hourPast
-                            ? 'bg-gray-200 text-gray-500'
-                            : 'bg-green-100 hover:bg-green-200 text-green-800'
-                        }`}
+                        className={`w-full text-xs p-1 rounded transition-all ${booked || hourPast
+                          ? 'bg-gray-200 text-gray-500'
+                          : 'bg-green-100 hover:bg-green-200 text-green-800'
+                          }`}
                       >
                         {hour > 12 ? hour - 12 : hour}
                         {hour >= 12 ? 'PM' : 'AM'}
@@ -254,7 +265,7 @@ const AppointmentBooking = () => {
 
   const renderMonthView = () => {
     const days = getDaysInMonth(currentDate);
-    
+
     return (
       <div className="bg-white rounded-lg shadow-sm overflow-hidden">
         <div className="grid grid-cols-7 border-b">
@@ -269,12 +280,12 @@ const AppointmentBooking = () => {
             if (!day) {
               return <div key={idx} className="border-r border-b min-h-24 bg-gray-50"></div>;
             }
-            
+
             const isToday = day.toDateString() === new Date().toDateString();
             const isPast = day < new Date() && !isToday;
             const isSelected = selectedDate?.toDateString() === day.toDateString();
             const availableSlots = HOURS.filter(h => !isTimeBooked(day, h) && !(isPast || (isToday && h < new Date().getHours()))).length;
-            
+
             return (
               <button
                 key={idx}
@@ -283,9 +294,8 @@ const AppointmentBooking = () => {
                   setViewMode('day');
                 }}
                 disabled={isPast}
-                className={`border-r border-b min-h-24 p-2 text-left transition-all ${
-                  isPast ? 'bg-gray-50 cursor-not-allowed' : 'hover:bg-gray-50'
-                } ${isToday ? 'bg-blue-50' : ''} ${isSelected ? 'ring-2 ring-blue-500' : ''}`}
+                className={`border-r border-b min-h-24 p-2 text-left transition-all ${isPast ? 'bg-gray-50 cursor-not-allowed' : 'hover:bg-gray-50'
+                  } ${isToday ? 'bg-blue-50' : ''} ${isSelected ? 'ring-2 ring-blue-500' : ''}`}
               >
                 <div className={`text-sm font-medium mb-1 ${isPast ? 'text-gray-400' : ''} ${isSelected ? 'text-blue-600' : ''}`}>
                   {day.getDate()}
@@ -315,7 +325,7 @@ const AppointmentBooking = () => {
             </div>
             <h2 className="text-3xl font-bold text-gray-900 mb-2">Booking Confirmed!</h2>
             <p className="text-gray-600 mb-8">Your appointment has been successfully scheduled</p>
-            
+
             <div className="bg-blue-50 rounded-lg p-6 mb-8">
               <div className="text-sm text-gray-600 mb-2">Confirmation Number</div>
               <div className="text-2xl font-bold text-blue-600">{confirmationNumber}</div>
@@ -408,25 +418,22 @@ const AppointmentBooking = () => {
                 <div className="flex gap-2">
                   <button
                     onClick={() => setViewMode('month')}
-                    className={`px-4 py-2 rounded-lg font-medium transition-colors ${
-                      viewMode === 'month' ? 'bg-blue-600 text-white' : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-                    }`}
+                    className={`px-4 py-2 rounded-lg font-medium transition-colors ${viewMode === 'month' ? 'bg-blue-600 text-white' : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                      }`}
                   >
                     Month
                   </button>
                   <button
                     onClick={() => setViewMode('week')}
-                    className={`px-4 py-2 rounded-lg font-medium transition-colors ${
-                      viewMode === 'week' ? 'bg-blue-600 text-white' : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-                    }`}
+                    className={`px-4 py-2 rounded-lg font-medium transition-colors ${viewMode === 'week' ? 'bg-blue-600 text-white' : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                      }`}
                   >
                     Week
                   </button>
                   <button
                     onClick={() => setViewMode('day')}
-                    className={`px-4 py-2 rounded-lg font-medium transition-colors ${
-                      viewMode === 'day' ? 'bg-blue-600 text-white' : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-                    }`}
+                    className={`px-4 py-2 rounded-lg font-medium transition-colors ${viewMode === 'day' ? 'bg-blue-600 text-white' : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                      }`}
                   >
                     Day
                   </button>
@@ -489,7 +496,7 @@ const AppointmentBooking = () => {
 
             <div className="bg-white rounded-xl shadow-lg p-6">
               <h2 className="text-2xl font-bold text-gray-900 mb-6">Your Information</h2>
-              
+
               <div className="space-y-4">
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -608,7 +615,7 @@ const AppointmentBooking = () => {
           <div className="space-y-6">
             <div className="bg-white rounded-xl shadow-lg p-6 sticky top-4">
               <h3 className="text-xl font-bold text-gray-900 mb-4">Booking Summary</h3>
-              
+
               {selectedDate && selectedTime !== null ? (
                 <div className="space-y-4">
                   <div className="p-4 bg-blue-50 rounded-lg">
@@ -617,11 +624,11 @@ const AppointmentBooking = () => {
                       <div>
                         <div className="font-medium text-gray-900">Selected Date</div>
                         <div className="text-sm text-gray-600">
-                          {selectedDate.toLocaleDateString('en-US', { 
-                            weekday: 'long', 
-                            month: 'long', 
-                            day: 'numeric', 
-                            year: 'numeric' 
+                          {selectedDate.toLocaleDateString('en-US', {
+                            weekday: 'long',
+                            month: 'long',
+                            day: 'numeric',
+                            year: 'numeric'
                           })}
                         </div>
                       </div>
@@ -709,7 +716,7 @@ const AppointmentBooking = () => {
             <div className="p-6 space-y-6">
               <div className="space-y-4">
                 <h4 className="font-semibold text-gray-900">Appointment Details</h4>
-                
+
                 <div className="grid grid-cols-2 gap-4">
                   <div className="p-4 bg-gray-50 rounded-lg">
                     <div className="text-sm text-gray-600 mb-1">Date</div>
@@ -728,7 +735,7 @@ const AppointmentBooking = () => {
 
               <div className="space-y-4">
                 <h4 className="font-semibold text-gray-900">Personal Information</h4>
-                
+
                 <div className="space-y-3">
                   <div className="flex justify-between">
                     <span className="text-gray-600">Name:</span>
@@ -751,7 +758,7 @@ const AppointmentBooking = () => {
 
               <div className="space-y-4">
                 <h4 className="font-semibold text-gray-900">Project Details</h4>
-                
+
                 <div className="space-y-3">
                   <div className="flex justify-between">
                     <span className="text-gray-600">Project Type:</span>
@@ -787,7 +794,7 @@ const AppointmentBooking = () => {
                     className="mt-1 w-5 h-5 text-blue-600 rounded focus:ring-2 focus:ring-blue-500"
                   />
                   <span className="text-sm text-gray-700">
-                    I agree to the terms and conditions and understand that this booking is subject to availability. 
+                    I agree to the terms and conditions and understand that this booking is subject to availability.
                     I consent to receive appointment confirmation and reminders via email and SMS.
                   </span>
                 </label>
@@ -803,11 +810,10 @@ const AppointmentBooking = () => {
                 <button
                   onClick={handleSubmit}
                   disabled={!termsAccepted || isLoading}
-                  className={`flex-1 px-6 py-3 rounded-lg font-semibold transition-colors ${
-                    termsAccepted && !isLoading
-                      ? 'bg-blue-600 hover:bg-blue-700 text-white'
-                      : 'bg-gray-300 text-gray-500 cursor-not-allowed'
-                  }`}
+                  className={`flex-1 px-6 py-3 rounded-lg font-semibold transition-colors ${termsAccepted && !isLoading
+                    ? 'bg-blue-600 hover:bg-blue-700 text-white'
+                    : 'bg-gray-300 text-gray-500 cursor-not-allowed'
+                    }`}
                 >
                   {isLoading ? (
                     <span className="flex items-center justify-center gap-2">
