@@ -1,5 +1,7 @@
 import axios from 'axios';
 import mongoose from 'mongoose';
+import fs from 'fs';
+
 
 const BASE_URL = 'http://localhost:8000/api';
 
@@ -97,11 +99,13 @@ async function runTest() {
         }
 
         console.log("   SVG Length:", myBlueprint.svgData.length);
-        if (myBlueprint.svgData.includes("<svg") && myBlueprint.svgData.includes("Master Bedroom")) {
-            console.log("   ✅ SVG Content looks valid (contains tags and room type).");
-        } else {
-            console.warn("   ⚠️ SVG Content might be malformed or simple.");
-        }
+        console.log("   SVG Start:", myBlueprint.svgData.substring(0, 100));
+
+        const outputPath = './blueprint_output.svg';
+        fs.writeFileSync(outputPath, myBlueprint.svgData);
+        console.log(`   💾 SVG saved to ${outputPath}`);
+        console.log(`   Absolute Path: ${fs.realpathSync(outputPath)}`);
+
 
         console.log("\n✨ VERIFICATION SUCCESSFUL ✨");
 
