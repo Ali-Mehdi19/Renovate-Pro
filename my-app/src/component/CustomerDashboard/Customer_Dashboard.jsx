@@ -1,668 +1,270 @@
 "use client";
 import React, { useState, useEffect } from 'react';
-import { Calendar, Download, Eye, X, Check, Clock, FileText, User, Lock, Mail, Phone, Bell, LogOut, Edit2, Trash2, CheckCircle, AlertCircle } from 'lucide-react';
+import { Calendar, Download, Eye, X, Check, Clock, FileText, User, Lock, Mail, Phone, Bell, LogOut, Edit2, Trash2, CheckCircle, AlertCircle, Plus } from 'lucide-react';
+import { useAuth } from '../../contexts/AuthContext';
+import api from '../../lib/api';
 
-// Mock data
-const mockUser = {
-    name: 'John Smith',
-    email: 'john.smith@email.com',
-    phone: '+1 (555) 123-4567',
-    notifications: {
-        email: true,
-        sms: false
-    }
-};
-
-const mockAppointments = [
-    {
-        id: 1,
-        date: '2026-01-25',
-        time: '10:00 AM',
-        address: '123 Oak Street, Suite 100',
-        surveyor: 'Sarah Johnson',
-        status: 'confirmed',
-        type: 'Site Survey'
-    },
-    {
-        id: 2,
-        date: '2026-01-15',
-        time: '2:00 PM',
-        address: '456 Pine Avenue',
-        surveyor: 'Mike Chen',
-        status: 'completed',
-        type: 'Blueprint Review'
-    },
-    {
-        id: 3,
-        date: '2026-01-10',
-        time: '11:30 AM',
-        address: '789 Maple Drive',
-        surveyor: 'Sarah Johnson',
-        status: 'completed',
-        type: 'Final Inspection'
-    }
-];
-
+// Mock Documents (Placeholder for future implementation)
 const mockDocuments = [
-    {
-        id: 1,
-        name: 'Site Survey Blueprint - Oak Street',
-        date: '2026-01-15',
-        status: 'ready',
-        formats: ['pdf', 'svg', 'csv']
-    },
-    {
-        id: 2,
-        name: 'Floor Plan - Maple Drive',
-        date: '2026-01-10',
-        status: 'delivered',
-        formats: ['pdf', 'svg']
-    },
-    {
-        id: 3,
-        name: 'Elevation Drawing - Pine Avenue',
-        date: '2026-01-20',
-        status: 'processing',
-        formats: ['pdf']
-    }
-];
-
-const availableSlots = [
-    { date: '2026-01-27', time: '9:00 AM' },
-    { date: '2026-01-27', time: '2:00 PM' },
-    { date: '2026-01-28', time: '10:30 AM' },
-    { date: '2026-01-28', time: '3:00 PM' },
-    { date: '2026-01-29', time: '11:00 AM' }
+    { id: 1, name: 'Site Survey Blueprint - Oak Street', date: '2026-01-15', status: 'ready', formats: ['pdf', 'svg', 'csv'] },
+    { id: 2, name: 'Floor Plan - Maple Drive', date: '2026-01-10', status: 'delivered', formats: ['pdf', 'svg'] },
 ];
 
 const CustomerDashboard = () => {
-    const [user, setUser] = useState(mockUser);
-    const [appointments, setAppointments] = useState(mockAppointments);
+    const { user, logout } = useAuth();
+    const [appointments, setAppointments] = useState([]);
     const [documents, setDocuments] = useState(mockDocuments);
-    const [showPastAppointments, setShowPastAppointments] = useState(false);
-    const [selectedAppointment, setSelectedAppointment] = useState(null);
-    const [showRescheduleModal, setShowRescheduleModal] = useState(false);
-    const [showCancelModal, setShowCancelModal] = useState(false);
-    const [showDetailsModal, setShowDetailsModal] = useState(false);
-    const [editingProfile, setEditingProfile] = useState(false);
-    const [wsConnected, setWsConnected] = useState(false);
     const [activeTab, setActiveTab] = useState('dashboard');
-    const [profileData, setProfileData] = useState(mockUser);
+    const [loading, setLoading] = useState(true);
 
-    // Simulate WebSocket connection
+    // Modals
+    const [showBookModal, setShowBookModal] = useState(false);
+    const [newBooking, setNewBooking] = useState({ date: '', time: '', address: '', lat: 19.0760, lng: 72.8777 });
+    const [bookingLoading, setBookingLoading] = useState(false);
+
+    // Fetch Data
     useEffect(() => {
-        const timer = setTimeout(() => setWsConnected(true), 1000);
-        return () => clearTimeout(timer);
-    }, []);
-
-    // Simulate real-time updates
-    useEffect(() => {
-        if (wsConnected) {
-            const interval = setInterval(() => {
-                setDocuments(prev => prev.map(doc =>
-                    doc.status === 'processing' && Math.random() > 0.7
-                        ? { ...doc, status: 'ready' }
-                        : doc
-                ));
-            }, 5000);
-            return () => clearInterval(interval);
-        }
-    }, [wsConnected]);
-
-    const handleLogout = () => {
-        alert('Logout functionality would be handled by the parent component');
-        // In a real app, you would call a logout API and redirect
-    };
-
-    const handleDownload = (docName, format) => {
-        alert(`Downloading ${docName} as ${format.toUpperCase()}`);
-        // In a real app, you would trigger actual file download
-    };
-
-    const handleReschedule = (slot) => {
-        setAppointments(prev => prev.map(apt =>
-            apt.id === selectedAppointment.id
-                ? {
-                    ...apt,
-                    date: slot.date,
-                    time: slot.time,
-                    status: 'confirmed'
-                }
-                : apt
-        ));
-        setShowRescheduleModal(false);
-        setSelectedAppointment(null);
-    };
-
-    const handleCancel = () => {
-        setAppointments(prev => prev.map(apt =>
-            apt.id === selectedAppointment.id
-                ? { ...apt, status: 'cancelled' }
-                : apt
-        ));
-        setShowCancelModal(false);
-        setSelectedAppointment(null);
-    };
-
-    const handleSaveProfile = (e) => {
-        e.preventDefault();
-        setUser(profileData);
-        setEditingProfile(false);
-        alert('Profile updated successfully!');
-    };
-
-    const handleProfileChange = (field, value) => {
-        setProfileData(prev => ({
-            ...prev,
-            [field]: value
-        }));
-    };
-
-    const handleNotificationChange = (type) => {
-        setProfileData(prev => ({
-            ...prev,
-            notifications: {
-                ...prev.notifications,
-                [type]: !prev.notifications[type]
+        const fetchAppointments = async () => {
+            try {
+                const res = await api.get('/appointments/my');
+                setAppointments(res.data.data);
+            } catch (error) {
+                console.error("Failed to fetch appointments", error);
+            } finally {
+                setLoading(false);
             }
-        }));
+        };
+        if (user) fetchAppointments();
+    }, [user]);
+
+    const handleBookAppointment = async (e) => {
+        e.preventDefault();
+        setBookingLoading(true);
+        try {
+            // Combine date and time
+            const dateTime = new Date(`${newBooking.date}T${newBooking.time}`);
+
+            await api.post('/appointments/book', {
+                date_time: dateTime,
+                address: newBooking.address,
+                geocode: { lat: newBooking.lat, lng: newBooking.lng } // Mock geocode usage for UI simplicity
+            });
+
+            // Refresh list
+            const res = await api.get('/appointments/my');
+            setAppointments(res.data.data);
+            setShowBookModal(false);
+            setNewBooking({ date: '', time: '', address: '', lat: 19.0760, lng: 72.8777 });
+            alert("Appointment Booked Successfully!");
+        } catch (error) {
+            console.error("Booking failed", error);
+            alert("Failed to book appointment.");
+        } finally {
+            setBookingLoading(false);
+        }
     };
-
-    const upcomingAppointments = appointments.filter(apt =>
-        new Date(apt.date) >= new Date() && apt.status !== 'cancelled' && apt.status !== 'completed'
-    );
-
-    const pastAppointments = appointments.filter(apt =>
-        new Date(apt.date) < new Date() || apt.status === 'cancelled' || apt.status === 'completed'
-    );
 
     const getStatusColor = (status) => {
         switch (status) {
-            case 'confirmed': return 'bg-green-100 text-green-700';
-            case 'completed': return 'bg-blue-100 text-blue-700';
-            case 'cancelled': return 'bg-red-100 text-red-700';
-            case 'processing': return 'bg-yellow-100 text-yellow-700';
+            case 'Scheduled': return 'bg-blue-100 text-blue-700 border border-blue-200';
+            case 'Completed': return 'bg-emerald-100 text-emerald-700 border border-emerald-200';
+            case 'Cancelled': return 'bg-red-100 text-red-700 border border-red-200';
             default: return 'bg-gray-100 text-gray-700';
         }
     };
 
     return (
-        <div className="min-h-screen bg-gray-50">
-            <header className="bg-white shadow-sm border-b">
-                <div className="max-w-7xl mx-auto px-4 py-4 flex justify-between items-center">
-                    <h1 className="text-2xl font-bold text-gray-800">Customer Portal</h1>
-                    <div className="flex items-center gap-4">
-                        {wsConnected && (
-                            <div className="flex items-center gap-2 text-green-600 text-sm">
-                                <div className="w-2 h-2 bg-green-600 rounded-full animate-pulse"></div>
-                                Live
-                            </div>
-                        )}
-                        <button
-                            onClick={handleLogout}
-                            className="flex items-center gap-2 px-4 py-2 text-gray-600 hover:text-gray-800 transition"
-                        >
-                            <LogOut className="h-4 w-4" />
-                            Logout
+        <div className="min-h-screen bg-gray-50 font-sans text-gray-800">
+            {/* Header */}
+            <header className="bg-white/80 backdrop-blur-md shadow-sm border-b border-white/20 sticky top-0 z-40">
+                <div className="max-w-7xl mx-auto px-6 py-4 flex justify-between items-center">
+                    <h1 className="text-2xl font-serif font-bold text-[var(--color-primary)]">
+                        Renovate<span className="text-[var(--color-secondary)]">Pro</span>
+                    </h1>
+                    <div className="flex items-center gap-6">
+                        <span className="text-sm font-medium text-gray-600">Welcome, {user?.fullName}</span>
+                        <button onClick={logout} className="flex items-center gap-2 text-red-600 hover:text-red-700 transition font-medium text-sm">
+                            <LogOut className="h-4 w-4" /> Sign Out
                         </button>
                     </div>
                 </div>
             </header>
 
+            {/* Navigation Tabs */}
             <div className="bg-white border-b">
-                <div className="max-w-7xl mx-auto px-4">
-                    <div className="flex gap-1">
-                        {['dashboard', 'documents', 'profile'].map((tab) => (
-                            <button
-                                key={tab}
-                                onClick={() => setActiveTab(tab)}
-                                className={`px-6 py-3 font-medium transition capitalize ${activeTab === tab
-                                        ? 'text-blue-600 border-b-2 border-blue-600'
-                                        : 'text-gray-600 hover:text-gray-800'
-                                    }`}
-                            >
-                                {tab}
-                            </button>
-                        ))}
-                    </div>
+                <div className="max-w-7xl mx-auto px-6 flex gap-8">
+                    {['dashboard', 'documents', 'profile'].map((tab) => (
+                        <button
+                            key={tab}
+                            onClick={() => setActiveTab(tab)}
+                            className={`py-4 font-medium transition capitalize border-b-2 ${activeTab === tab
+                                    ? 'text-[var(--color-primary)] border-[var(--color-secondary)]'
+                                    : 'text-gray-500 border-transparent hover:text-gray-700'
+                                }`}
+                        >
+                            {tab}
+                        </button>
+                    ))}
                 </div>
             </div>
 
-            <main className="max-w-7xl mx-auto px-4 py-8">
-                {/* Dashboard Tab */}
+            <main className="max-w-7xl mx-auto px-6 py-8">
                 {activeTab === 'dashboard' && (
-                    <div className="space-y-6">
-                        <div className="bg-gradient-to-r from-blue-600 to-indigo-600 rounded-lg p-6 text-white">
-                            <h2 className="text-2xl font-bold mb-2">Welcome back, {user.name}!</h2>
-                            <p className="opacity-90">Here's an overview of your appointments and documents</p>
+                    <div className="space-y-8">
+                        {/* Welcome Banner */}
+                        <div className="bg-gradient-to-r from-[var(--color-primary)] to-emerald-800 rounded-2xl p-8 text-white shadow-xl relative overflow-hidden">
+                            <div className="absolute top-0 right-0 w-64 h-64 bg-white/10 rounded-full blur-3xl -mr-16 -mt-16"></div>
+                            <h2 className="text-3xl font-serif font-bold mb-2 relative z-10">Overview</h2>
+                            <p className="opacity-90 relative z-10">Manage your renovation journey with ease.</p>
+
+                            <button
+                                onClick={() => setShowBookModal(true)}
+                                className="mt-6 bg-[var(--color-secondary)] text-white px-6 py-3 rounded-lg font-semibold shadow-lg hover:bg-yellow-600 transition flex items-center gap-2 relative z-10"
+                            >
+                                <Plus className="h-5 w-5" /> Book New Survey
+                            </button>
                         </div>
 
-                        <div className="bg-white rounded-lg shadow-sm p-6">
-                            <h3 className="text-xl font-bold text-gray-800 mb-4">Upcoming Appointments</h3>
-                            {upcomingAppointments.length > 0 ? (
-                                <div className="space-y-4">
-                                    {upcomingAppointments.map((apt) => (
-                                        <div key={apt.id} className="border rounded-lg p-4 hover:border-blue-500 transition">
-                                            <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
-                                                <div className="flex-1">
-                                                    <div className="flex items-center gap-2 mb-2">
-                                                        <Calendar className="h-5 w-5 text-blue-600" />
-                                                        <span className="font-semibold text-gray-800">
-                                                            {new Date(apt.date).toLocaleDateString('en-US', {
-                                                                weekday: 'long',
-                                                                year: 'numeric',
-                                                                month: 'long',
-                                                                day: 'numeric'
-                                                            })}
+                        {/* Appointments Section */}
+                        <div>
+                            <h3 className="text-xl font-bold text-gray-800 mb-6 flex items-center gap-2">
+                                <Calendar className="h-5 w-5 text-[var(--color-primary)]" /> Your Appointments
+                            </h3>
+
+                            {loading ? (
+                                <p className="text-gray-500 animate-pulse">Loading appointments...</p>
+                            ) : appointments.length > 0 ? (
+                                <div className="grid gap-4">
+                                    {appointments.map((apt) => (
+                                        <div key={apt._id} className="bg-white rounded-xl p-6 shadow-sm border hover:shadow-md transition group">
+                                            <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+                                                <div>
+                                                    <div className="flex items-center gap-3 mb-2">
+                                                        <span className={`px-3 py-1 rounded-full text-xs font-semibold ${getStatusColor(apt.status)}`}>
+                                                            {apt.status}
                                                         </span>
-                                                        <span className="text-gray-600">at {apt.time}</span>
-                                                    </div>
-                                                    <p className="text-gray-600 ml-7">{apt.address}</p>
-                                                    <div className="flex flex-wrap gap-2 ml-7 mt-2">
-                                                        <span className="text-sm text-gray-600">Surveyor: {apt.surveyor}</span>
-                                                        <span className={`text-sm px-2 py-1 rounded ${getStatusColor(apt.status)}`}>
-                                                            {apt.status.charAt(0).toUpperCase() + apt.status.slice(1)}
+                                                        <span className="text-sm text-gray-500 flex items-center gap-1">
+                                                            <Clock className="h-3 w-3" />
+                                                            {new Date(apt.date_time).toLocaleDateString()} at {new Date(apt.date_time).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                                                         </span>
                                                     </div>
+                                                    <p className="font-semibold text-lg text-gray-800">{apt.address}</p>
+                                                    <p className="text-sm text-gray-500 mt-1">Surveyor: {apt.surveyor_id ? "Assigned" : "Pending Assignment"}</p>
                                                 </div>
-                                                <div className="flex flex-wrap gap-2">
-                                                    <button
-                                                        onClick={() => {
-                                                            setSelectedAppointment(apt);
-                                                            setShowDetailsModal(true);
-                                                        }}
-                                                        className="flex items-center gap-2 px-4 py-2 text-blue-600 border border-blue-600 rounded-lg hover:bg-blue-50 transition"
-                                                    >
-                                                        <Eye className="h-4 w-4" />
-                                                        Details
-                                                    </button>
-                                                    <button
-                                                        onClick={() => {
-                                                            setSelectedAppointment(apt);
-                                                            setShowRescheduleModal(true);
-                                                        }}
-                                                        className="flex items-center gap-2 px-4 py-2 text-gray-600 border border-gray-300 rounded-lg hover:bg-gray-50 transition"
-                                                    >
-                                                        <Calendar className="h-4 w-4" />
-                                                        Reschedule
-                                                    </button>
-                                                    <button
-                                                        onClick={() => {
-                                                            setSelectedAppointment(apt);
-                                                            setShowCancelModal(true);
-                                                        }}
-                                                        className="flex items-center gap-2 px-4 py-2 text-red-600 border border-red-600 rounded-lg hover:bg-red-50 transition"
-                                                    >
-                                                        <X className="h-4 w-4" />
+                                                {apt.status === 'Scheduled' && (
+                                                    <button className="text-red-500 hover:text-red-700 text-sm font-medium opacity-0 group-hover:opacity-100 transition">
                                                         Cancel
                                                     </button>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    ))}
-                                </div>
-                            ) : (
-                                <p className="text-gray-500 text-center py-8">No upcoming appointments</p>
-                            )}
-                        </div>
-
-                        <div className="bg-white rounded-lg shadow-sm p-6">
-                            <button
-                                onClick={() => setShowPastAppointments(!showPastAppointments)}
-                                className="w-full flex items-center justify-between text-xl font-bold text-gray-800 mb-4"
-                            >
-                                <span>Past Appointments ({pastAppointments.length})</span>
-                                <span className={`transform transition ${showPastAppointments ? 'rotate-180' : ''}`}>
-                                    ▼
-                                </span>
-                            </button>
-
-                            {showPastAppointments && pastAppointments.length > 0 ? (
-                                <div className="space-y-3">
-                                    {pastAppointments.map((apt) => (
-                                        <div key={apt.id} className="border rounded-lg p-4 bg-gray-50">
-                                            <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-2">
-                                                <div>
-                                                    <div className="flex items-center gap-2">
-                                                        <span className="font-medium text-gray-700">
-                                                            {new Date(apt.date).toLocaleDateString()}
-                                                        </span>
-                                                        <span className="text-gray-600">{apt.time}</span>
-                                                        <span className={`text-sm px-2 py-1 rounded ${getStatusColor(apt.status)}`}>
-                                                            {apt.status.charAt(0).toUpperCase() + apt.status.slice(1)}
-                                                        </span>
-                                                    </div>
-                                                    <p className="text-sm text-gray-600 mt-1">{apt.type} - {apt.address}</p>
-                                                </div>
-                                                <button
-                                                    onClick={() => {
-                                                        setSelectedAppointment(apt);
-                                                        setShowDetailsModal(true);
-                                                    }}
-                                                    className="text-blue-600 hover:underline text-sm"
-                                                >
-                                                    View Details
-                                                </button>
-                                            </div>
-                                        </div>
-                                    ))}
-                                </div>
-                            ) : (
-                                <p className="text-gray-500 text-center py-4">No past appointments</p>
-                            )}
-                        </div>
-                    </div>
-                )}
-
-                {/* Documents Tab */}
-                {activeTab === 'documents' && (
-                    <div className="bg-white rounded-lg shadow-sm p-6">
-                        <h3 className="text-xl font-bold text-gray-800 mb-4">Your Documents</h3>
-                        <div className="overflow-x-auto">
-                            <table className="w-full">
-                                <thead className="bg-gray-50 border-b">
-                                    <tr>
-                                        <th className="px-4 py-3 text-left text-sm font-semibold text-gray-700">Document</th>
-                                        <th className="px-4 py-3 text-left text-sm font-semibold text-gray-700">Date</th>
-                                        <th className="px-4 py-3 text-left text-sm font-semibold text-gray-700">Status</th>
-                                        <th className="px-4 py-3 text-left text-sm font-semibold text-gray-700">Actions</th>
-                                    </tr>
-                                </thead>
-                                <tbody className="divide-y">
-                                    {documents.map((doc) => (
-                                        <tr key={doc.id} className="hover:bg-gray-50">
-                                            <td className="px-4 py-4">
-                                                <div className="flex items-center gap-2">
-                                                    <FileText className="h-5 w-5 text-blue-600" />
-                                                    <span className="font-medium text-gray-800">{doc.name}</span>
-                                                </div>
-                                            </td>
-                                            <td className="px-4 py-4 text-gray-600">{doc.date}</td>
-                                            <td className="px-4 py-4">
-                                                <span className={`inline-flex items-center gap-1 px-3 py-1 rounded-full text-sm ${doc.status === 'ready' ? 'bg-green-100 text-green-700' :
-                                                        doc.status === 'delivered' ? 'bg-blue-100 text-blue-700' :
-                                                            'bg-yellow-100 text-yellow-700'
-                                                    }`}>
-                                                    {doc.status === 'ready' && <CheckCircle className="h-4 w-4" />}
-                                                    {doc.status === 'processing' && <Clock className="h-4 w-4" />}
-                                                    {doc.status === 'delivered' && <Check className="h-4 w-4" />}
-                                                    {doc.status.charAt(0).toUpperCase() + doc.status.slice(1)}
-                                                </span>
-                                            </td>
-                                            <td className="px-4 py-4">
-                                                {doc.status !== 'processing' ? (
-                                                    <div className="flex flex-wrap gap-2">
-                                                        {doc.formats.map((format) => (
-                                                            <button
-                                                                key={format}
-                                                                onClick={() => handleDownload(doc.name, format)}
-                                                                className="flex items-center gap-1 px-3 py-1 text-sm bg-blue-600 text-white rounded hover:bg-blue-700 transition"
-                                                            >
-                                                                <Download className="h-3 w-3" />
-                                                                {format.toUpperCase()}
-                                                            </button>
-                                                        ))}
-                                                    </div>
-                                                ) : (
-                                                    <span className="text-sm text-gray-500">Processing...</span>
                                                 )}
-                                            </td>
-                                        </tr>
+                                            </div>
+                                        </div>
                                     ))}
-                                </tbody>
-                            </table>
+                                </div>
+                            ) : (
+                                <div className="text-center py-12 bg-white rounded-xl border border-dashed border-gray-300">
+                                    <p className="text-gray-500">No appointments found. Book one to get started!</p>
+                                </div>
+                            )}
                         </div>
                     </div>
                 )}
 
-                {/* Profile Tab */}
-                {activeTab === 'profile' && (
-                    <div className="bg-white rounded-lg shadow-sm p-6">
-                        <div className="flex justify-between items-center mb-6">
-                            <h3 className="text-xl font-bold text-gray-800">Profile Settings</h3>
-                            <button
-                                onClick={() => {
-                                    if (editingProfile) {
-                                        setProfileData(user); // Reset to original data
-                                    }
-                                    setEditingProfile(!editingProfile);
-                                }}
-                                className="flex items-center gap-2 px-4 py-2 text-blue-600 border border-blue-600 rounded-lg hover:bg-blue-50 transition"
-                            >
-                                <Edit2 className="h-4 w-4" />
-                                {editingProfile ? 'Cancel' : 'Edit'}
-                            </button>
+                {/* Documents & Profile Placeholders (Preserved Essence) */}
+                {activeTab === 'documents' && (
+                    <div className="bg-white rounded-xl shadow-sm p-8">
+                        <h3 className="text-xl font-bold mb-6">Project Documents</h3>
+                        <div className="space-y-4">
+                            {documents.map(doc => (
+                                <div key={doc.id} className="flex justify-between items-center p-4 border rounded-lg hover:bg-gray-50">
+                                    <div className="flex items-center gap-3">
+                                        <FileText className="text-[var(--color-primary)]" />
+                                        <div>
+                                            <p className="font-medium text-gray-800">{doc.name}</p>
+                                            <p className="text-sm text-gray-500">{doc.date}</p>
+                                        </div>
+                                    </div>
+                                    <button className="text-[var(--color-primary)] font-medium text-sm hover:underline">Download</button>
+                                </div>
+                            ))}
                         </div>
+                    </div>
+                )}
 
-                        <form onSubmit={handleSaveProfile}>
-                            <div className="space-y-6">
-                                <div>
-                                    <h4 className="font-semibold text-gray-800 mb-4">Contact Information</h4>
-                                    <div className="space-y-4">
-                                        <div>
-                                            <label className="block text-sm font-medium text-gray-700 mb-1">Full Name</label>
-                                            <div className="relative">
-                                                <User className="absolute left-3 top-3 h-5 w-5 text-gray-400" />
-                                                <input
-                                                    type="text"
-                                                    value={profileData.name}
-                                                    onChange={(e) => handleProfileChange('name', e.target.value)}
-                                                    disabled={!editingProfile}
-                                                    className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:bg-gray-50 disabled:text-gray-600"
-                                                />
-                                            </div>
-                                        </div>
-                                        <div>
-                                            <label className="block text-sm font-medium text-gray-700 mb-1">Email</label>
-                                            <div className="relative">
-                                                <Mail className="absolute left-3 top-3 h-5 w-5 text-gray-400" />
-                                                <input
-                                                    type="email"
-                                                    value={profileData.email}
-                                                    onChange={(e) => handleProfileChange('email', e.target.value)}
-                                                    disabled={!editingProfile}
-                                                    className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:bg-gray-50 disabled:text-gray-600"
-                                                />
-                                            </div>
-                                        </div>
-                                        <div>
-                                            <label className="block text-sm font-medium text-gray-700 mb-1">Phone</label>
-                                            <div className="relative">
-                                                <Phone className="absolute left-3 top-3 h-5 w-5 text-gray-400" />
-                                                <input
-                                                    type="tel"
-                                                    value={profileData.phone}
-                                                    onChange={(e) => handleProfileChange('phone', e.target.value)}
-                                                    disabled={!editingProfile}
-                                                    className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:bg-gray-50 disabled:text-gray-600"
-                                                />
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-
-                                <div className="border-t pt-6">
-                                    <h4 className="font-semibold text-gray-800 mb-4">Security</h4>
-                                    <button
-                                        type="button"
-                                        onClick={() => alert('Password change functionality would go here')}
-                                        className="flex items-center gap-2 px-4 py-2 text-gray-700 border border-gray-300 rounded-lg hover:bg-gray-50 transition"
-                                    >
-                                        <Lock className="h-4 w-4" />
-                                        Change Password
-                                    </button>
-                                </div>
-
-                                <div className="border-t pt-6">
-                                    <h4 className="font-semibold text-gray-800 mb-4 flex items-center gap-2">
-                                        <Bell className="h-5 w-5" />
-                                        Notification Preferences
-                                    </h4>
-                                    <div className="space-y-3">
-                                        <label className="flex items-center gap-3">
-                                            <input
-                                                type="checkbox"
-                                                checked={profileData.notifications.email}
-                                                onChange={() => handleNotificationChange('email')}
-                                                disabled={!editingProfile}
-                                                className="w-4 h-4 text-blue-600 rounded focus:ring-2 focus:ring-blue-500"
-                                            />
-                                            <span className="text-gray-700">Email notifications</span>
-                                        </label>
-                                        <label className="flex items-center gap-3">
-                                            <input
-                                                type="checkbox"
-                                                checked={profileData.notifications.sms}
-                                                onChange={() => handleNotificationChange('sms')}
-                                                disabled={!editingProfile}
-                                                className="w-4 h-4 text-blue-600 rounded focus:ring-2 focus:ring-blue-500"
-                                            />
-                                            <span className="text-gray-700">SMS notifications</span>
-                                        </label>
-                                    </div>
-                                </div>
-
-                                {editingProfile && (
-                                    <div className="border-t pt-6">
-                                        <button
-                                            type="submit"
-                                            className="w-full bg-blue-600 text-white py-2 rounded-lg hover:bg-blue-700 transition font-medium"
-                                        >
-                                            Save Changes
-                                        </button>
-                                    </div>
-                                )}
+                {activeTab === 'profile' && (
+                    <div className="bg-white rounded-xl shadow-sm p-8 max-w-2xl">
+                        <h3 className="text-xl font-bold mb-6">My Profile</h3>
+                        <div className="space-y-4">
+                            <div>
+                                <label className="block text-sm font-medium text-gray-500">Full Name</label>
+                                <p className="text-lg font-medium text-gray-900">{user?.fullName}</p>
                             </div>
-                        </form>
+                            <div>
+                                <label className="block text-sm font-medium text-gray-500">Email</label>
+                                <p className="text-lg font-medium text-gray-900">{user?.email}</p>
+                            </div>
+                            <div>
+                                <label className="block text-sm font-medium text-gray-500">Role</label>
+                                <p className="text-lg font-medium text-gray-900">{user?.role}</p>
+                            </div>
+                        </div>
                     </div>
                 )}
             </main>
 
-            {/* Reschedule Modal */}
-            {showRescheduleModal && (
-               <div className="fixed inset-0 backdrop-blur-md bg-black/20 flex items-center justify-center p-4 z-50">
-                    <div className="bg-white rounded-lg max-w-md w-full p-6">
-                        <div className="flex justify-between items-center mb-4">
-                            <h3 className="text-xl font-bold text-gray-800">Reschedule Appointment</h3>
-                            <button
-                                onClick={() => setShowRescheduleModal(false)}
-                                className="text-gray-400 hover:text-gray-600"
-                            >
-                                <X className="h-6 w-6" />
-                            </button>
+            {/* Booking Modal */}
+            {showBookModal && (
+                <div className="fixed inset-0 bg-black/40 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+                    <div className="bg-white rounded-2xl w-full max-w-lg p-8 shadow-2xl animate-in fade-in zoom-in duration-200">
+                        <div className="flex justify-between items-center mb-6">
+                            <h3 className="text-xl font-bold text-gray-800">Book a Survey</h3>
+                            <button onClick={() => setShowBookModal(false)} className="text-gray-400 hover:text-gray-600"><X /></button>
                         </div>
-                        <p className="text-gray-600 mb-4">Select a new time slot:</p>
-                        <div className="space-y-2 max-h-96 overflow-y-auto">
-                            {availableSlots.map((slot, idx) => (
-                                <button
-                                    key={idx}
-                                    onClick={() => handleReschedule(slot)}
-                                    className="w-full text-left px-4 py-3 border rounded-lg hover:border-blue-500 hover:bg-blue-50 transition"
-                                >
-                                    <div className="font-medium text-gray-800">
-                                        {new Date(slot.date).toLocaleDateString('en-US', {
-                                            weekday: 'long',
-                                            month: 'long',
-                                            day: 'numeric'
-                                        })}
-                                    </div>
-                                    <div className="text-gray-600 text-sm">{slot.time}</div>
-                                </button>
-                            ))}
-                        </div>
-                    </div>
-                </div>
-            )}
 
-            {/* Cancel Confirmation Modal */}
-            {showCancelModal && (
-               <div className="fixed inset-0 backdrop-blur-md bg-black/20 flex items-center justify-center p-4 z-50">
-                    <div className="bg-white rounded-lg max-w-md w-full p-6">
-                        <div className="flex justify-between items-center mb-4">
-                            <h3 className="text-xl font-bold text-gray-800">Cancel Appointment</h3>
-                            <button
-                                onClick={() => setShowCancelModal(false)}
-                                className="text-gray-400 hover:text-gray-600"
-                            >
-                                <X className="h-6 w-6" />
-                            </button>
-                        </div>
-                        <div className="mb-6">
-                            <AlertCircle className="h-12 w-12 text-red-500 mx-auto mb-4" />
-                            <p className="text-gray-600 text-center">
-                                Are you sure you want to cancel this appointment? This action cannot be undone.
-                            </p>
-                        </div>
-                        <div className="flex gap-3">
-                            <button
-                                onClick={() => setShowCancelModal(false)}
-                                className="flex-1 px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 transition"
-                            >
-                                Keep Appointment
-                            </button>
-                            <button
-                                onClick={handleCancel}
-                                className="flex-1 px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition"
-                            >
-                                Yes, Cancel
-                            </button>
-                        </div>
-                    </div>
-                </div>
-            )}
+                        <form onSubmit={handleBookAppointment} className="space-y-4">
+                            <div>
+                                <label className="block text-sm font-medium text-gray-700 mb-1">Address</label>
+                                <input
+                                    type="text"
+                                    required
+                                    className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-[var(--color-primary)] focus:outline-none"
+                                    placeholder="Enter full property address"
+                                    value={newBooking.address}
+                                    onChange={e => setNewBooking({ ...newBooking, address: e.target.value })}
+                                />
+                            </div>
+                            <div className="grid grid-cols-2 gap-4">
+                                <div>
+                                    <label className="block text-sm font-medium text-gray-700 mb-1">Date</label>
+                                    <input
+                                        type="date"
+                                        required
+                                        className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-[var(--color-primary)] focus:outline-none"
+                                        value={newBooking.date}
+                                        onChange={e => setNewBooking({ ...newBooking, date: e.target.value })}
+                                    />
+                                </div>
+                                <div>
+                                    <label className="block text-sm font-medium text-gray-700 mb-1">Time</label>
+                                    <input
+                                        type="time"
+                                        required
+                                        className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-[var(--color-primary)] focus:outline-none"
+                                        value={newBooking.time}
+                                        onChange={e => setNewBooking({ ...newBooking, time: e.target.value })}
+                                    />
+                                </div>
+                            </div>
 
-            {/* Appointment Details Modal */}
-            {showDetailsModal && selectedAppointment && (
-                <div className="fixed inset-0 backdrop-blur-lg bg-white/20 flex items-center justify-center p-4 z-50">
-                <div className="bg-white rounded-lg max-w-md w-full p-6">
-                    <div className="flex justify-between items-center mb-4">
-                        <h3 className="text-xl font-bold text-gray-800">Appointment Details</h3>
-                        <button
-                            onClick={() => setShowDetailsModal(false)}
-                            className="text-gray-400 hover:text-gray-600"
-                        >
-                            <X className="h-6 w-6" />
-                        </button>
+                            <button
+                                type="submit"
+                                disabled={bookingLoading}
+                                className="w-full mt-4 bg-[var(--color-primary)] text-white py-3 rounded-lg font-bold hover:bg-emerald-800 transition shadow-lg disabled:opacity-70"
+                            >
+                                {bookingLoading ? 'Booking...' : 'Confirm Booking'}
+                            </button>
+                        </form>
                     </div>
-                    <div className="space-y-4">
-                        <div>
-                            <p className="text-sm text-gray-600">Type</p>
-                            <p className="font-medium text-gray-800">{selectedAppointment.type}</p>
-                        </div>
-                        <div>
-                            <p className="text-sm text-gray-600">Date & Time</p>
-                            <p className="font-medium text-gray-800">
-                                {new Date(selectedAppointment.date).toLocaleDateString('en-US', {
-                                    weekday: 'long',
-                                    year: 'numeric',
-                                    month: 'long',
-                                    day: 'numeric'
-                                })} at {selectedAppointment.time}
-                            </p>
-                        </div>
-                        <div>
-                            <p className="text-sm text-gray-600">Location</p>
-                            <p className="font-medium text-gray-800">{selectedAppointment.address}</p>
-                        </div>
-                        <div>
-                            <p className="text-sm text-gray-600">Surveyor</p>
-                            <p className="font-medium text-gray-800">{selectedAppointment.surveyor}</p>
-                        </div>
-                        <div>
-                            <p className="text-sm text-gray-600">Status</p>
-                            <span className={`inline-block px-3 py-1 rounded-full text-sm font-medium ${getStatusColor(selectedAppointment.status)}`}>
-                                {selectedAppointment.status.charAt(0).toUpperCase() + selectedAppointment.status.slice(1)}
-                            </span>
-                        </div>
-                    </div>
-                    <button
-                        onClick={() => setShowDetailsModal(false)}
-                        className="w-full mt-6 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition"
-                    >
-                        Close
-                    </button>
                 </div>
-            </div>
             )}
         </div>
     );

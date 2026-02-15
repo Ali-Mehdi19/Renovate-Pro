@@ -1,0 +1,34 @@
+
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="-1000 -1000 2000 2000">
+            <path d="M 0 0 L 0 500 L -300 500 L -300 50 Z" fill="#f9f9f9" stroke="black" stroke-width="3" />
+            
+        <line x1="-25" y1="0" x2="-25" y2="500" stroke="blue" stroke-width="1" stroke-dasharray="4" />
+        <circle cx="-25" cy="0" r="2" fill="blue" />
+        <circle cx="-25" cy="500" r="2" fill="blue" />
+        <text x="-25" y="245" font-size="12" fill="blue" text-anchor="middle">
+            5.00m
+        </text>
+    
+        <line x1="0" y1="475" x2="-300" y2="475" stroke="blue" stroke-width="1" stroke-dasharray="4" />
+        <circle cx="0" cy="475" r="2" fill="blue" />
+        <circle cx="-300" cy="475" r="2" fill="blue" />
+        <text x="-150" y="470" font-size="12" fill="blue" text-anchor="middle">
+            3.00m
+        </text>
+    
+        <line x1="-275" y1="500" x2="-275" y2="50" stroke="blue" stroke-width="1" stroke-dasharray="4" />
+        <circle cx="-275" cy="500" r="2" fill="blue" />
+        <circle cx="-275" cy="50" r="2" fill="blue" />
+        <text x="-275" y="270" font-size="12" fill="blue" text-anchor="middle">
+            4.50m
+        </text>
+    
+        <line x1="-295.89002531736605" y1="74.6598480958036" x2="4.109974682633933" y2="24.659848095803593" stroke="blue" stroke-width="1" stroke-dasharray="4" />
+        <circle cx="-295.89002531736605" cy="74.6598480958036" r="2" fill="blue" />
+        <circle cx="4.109974682633933" cy="24.659848095803593" r="2" fill="blue" />
+        <text x="-145.89002531736605" y="44.659848095803596" font-size="12" fill="blue" text-anchor="middle">
+            2.00m
+        </text>
+    
+        </svg>
+    

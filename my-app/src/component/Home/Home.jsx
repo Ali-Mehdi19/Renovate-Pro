@@ -11,9 +11,11 @@ import {
   CheckCircle,
 } from "lucide-react";
 import { useRouter } from "next/navigation";
+import { useAuth } from "../../contexts/AuthContext";
 
 export default function RenovateProLanding() {
   const router = useRouter();
+  const { user } = useAuth();
   const features = [
     {
       icon: <Ruler className="w-8 h-8" />,
@@ -89,19 +91,20 @@ export default function RenovateProLanding() {
         <div className="max-w-7xl mx-auto grid md:grid-cols-2 gap-12 items-center">
           <div className="space-y-6">
             <h1 className="text-4xl md:text-6xl font-bold text-gray-900">
-              Professional Room Measurement Service
+              Professional Room Renovation Service
             </h1>
             <p className="text-xl text-gray-600">
               Accurate blueprints for your renovation projects by certified
               professionals.
             </p>
             <div className="flex gap-4">
-              <button 
-              onClick={() => router.push("/bookingsurvey")}
-              className="bg-blue-600 text-white px-8 py-4 rounded-lg hover:bg-blue-700">
+              <button
+                onClick={() => router.push("/bookingsurvey")}
+                className="bg-blue-600 text-white px-8 py-4 rounded-lg hover:bg-blue-700 font-semibold"
+              >
                 Book a Survey
               </button>
-              <button className="border-2 border-blue-600 text-blue-600 px-8 py-4 rounded-lg">
+              <button className="border-2 border-blue-600 text-blue-600 px-8 py-4 rounded-lg font-semibold hover:bg-blue-50">
                 Learn More
               </button>
             </div>
@@ -189,9 +192,9 @@ export default function RenovateProLanding() {
         <p className="text-blue-100 mb-8">
           Book a professional survey and receive blueprints within 48 hours.
         </p>
-        <button 
-         onClick={() => router.push("/bookingsurvey")}
-        className="bg-white text-blue-600 px-8 py-4 rounded-lg font-semibold">
+        <button
+          onClick={() => router.push(user ? "/bookingsurvey" : "/login")}
+          className="bg-white text-blue-600 px-8 py-4 rounded-lg font-semibold">
           Book Your Survey Now
         </button>
       </section>

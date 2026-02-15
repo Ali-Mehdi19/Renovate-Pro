@@ -5,7 +5,7 @@ const BlueprintSchema = new mongoose.Schema({
         type: mongoose.Schema.Types.ObjectId,
         ref: 'SurveyData',
         required: true,
-        unique: true // [cite: 73, 95]
+        unique: true
     },
     svgData: {
         type: String, // Storing raw SVG for the frontend viewer
