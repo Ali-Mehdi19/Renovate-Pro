@@ -1,45 +1,127 @@
-/*
-This controller manages the "Workflow Efficiency" objective (01) by handling the scheduling of site surveys.
-Create Appointment: Allows customers to book a slot based on geocoded locations.
-Assign Surveyor: Enables the system or admin to link a specific Surveyor_ID to a site visit.
-**/
-
 import Appointment from "../models/appointment.models.js";
-// import User from "../models/user.models.js";
-import { asyncHandler } from '../utils/AsyncHandler.js';
+import { asyncHandler } from '../utils/asyncHandler.js';
 import { ApiError } from "../utils/ApiError.js";
 import { ApiResponse } from "../utils/ApiResponse.js";
 
+// 1. Create Appointment (Customer)
 const createAppointment = asyncHandler(async (req, res) => {
-    try {
+    const { date_time, address, geocode } = req.body;
 
-        const { date_time, address, geocode } = req.body;
-        // Logic to ensure the date is in the future (Validity Check)
-
-        const newAppointment = new Appointment({
-            customer_id: req.user.id, // From Auth Middleware
-            date_time,
-            address,
-            geocode,
-            status: 'Scheduled'
-        });
-        await newAppointment.save();
-        new ApiResponse(201, "Appointment created successfully: ", newAppointment)
-    } catch (error) {
-        new ApiError(400, "Failed to create an Appointment: ", error)
+    // Validation
+    if (!date_time || !address || !geocode) {
+        throw new ApiError(400, "Date, Address, and Geocode are required");
     }
+
+    const appointmentDate = new Date(date_time);
+    if (appointmentDate < new Date()) {
+        throw new ApiError(400, "Appointment date must be in the future");
+    }
+
+    const newAppointment = await Appointment.create({
+        customer_id: req.user._id,
+        date_time: appointmentDate,
+        address,
+        geocode,
+        status: 'Scheduled'
+    });
+
+    return res.status(201).json(
+        new ApiResponse(201, "Appointment booked successfully", newAppointment)
+    );
 });
 
-const getSurveyorTasks = async (req, res) => {
-    // FR3: Surveyor views assigned appointments 
-    const tasks = await Appointment.find({
-        surveyor_id: req.user.id,
-        status: 'Scheduled'
-    }).sort('date_time');
-    res.json(tasks);
-};
+// 2. Assign Surveyor (Admin/Planner)
+const assignSurveyor = asyncHandler(async (req, res) => {
+    const { id } = req.params;
+    const { surveyorId } = req.body;
 
-export default {
+    if (!surveyorId) throw new ApiError(400, "Surveyor ID is required");
+
+    // RBAC Check
+    if (req.user.role !== 'Admin' && req.user.role !== 'Planner') {
+        throw new ApiError(403, "Access denied: Only Admin/Planner can assign surveyors");
+    }
+
+    const appointment = await Appointment.findByIdAndUpdate(
+        id,
+        { surveyor_id: surveyorId },
+        { new: true }
+    );
+
+    if (!appointment) throw new ApiError(404, "Appointment not found");
+
+    return res.status(200).json(
+        new ApiResponse(200, "Surveyor assigned successfully", appointment)
+    );
+});
+
+// 3. Update Status (Surveyor/Admin)
+const updateStatus = asyncHandler(async (req, res) => {
+    const { id } = req.params;
+    const { status } = req.body;
+
+    if (!['Scheduled', 'Completed', 'Cancelled'].includes(status)) {
+        throw new ApiError(400, "Invalid status");
+    }
+
+    const appointment = await Appointment.findById(id);
+    if (!appointment) throw new ApiError(404, "Appointment not found");
+
+    // Authorization Check: Only assigned surveyor or Admin can update
+    if (req.user.role !== 'Admin' &&
+        req.user.role === 'Surveyor' &&
+        appointment.surveyor_id?.toString() !== req.user._id.toString()) {
+        throw new ApiError(403, "You are not authorized to update this appointment");
+    }
+
+    appointment.status = status;
+    await appointment.save();
+
+    return res.status(200).json(
+        new ApiResponse(200, "Appointment status updated", appointment)
+    );
+});
+
+// 4. Get My Appointments (Customer)
+const getMyAppointments = asyncHandler(async (req, res) => {
+    const appointments = await Appointment.find({ customer_id: req.user._id })
+        .sort({ date_time: 1 });
+
+    return res.status(200).json(
+        new ApiResponse(200, "Appointments fetched successfully", appointments)
+    );
+});
+
+// 5. Get Assigned Tasks (Surveyor)
+const getSurveyorTasks = asyncHandler(async (req, res) => {
+    if (req.user.role !== 'Surveyor') throw new ApiError(403, "Access denied");
+
+    const tasks = await Appointment.find({
+        surveyor_id: req.user._id,
+        status: { $ne: 'Cancelled' }
+    }).sort('date_time');
+
+    return res.status(200).json(
+        new ApiResponse(200, "Tasks fetched successfully", tasks)
+    );
+});
+
+// 6. Get All Appointments (Agile/Admin view)
+const getAllAppointments = asyncHandler(async (req, res) => {
+    if (req.user.role !== 'Admin' && req.user.role !== 'Planner') {
+        throw new ApiError(403, "Access denied");
+    }
+    const appointments = await Appointment.find().sort({ date_time: -1 });
+    return res.status(200).json(
+        new ApiResponse(200, "All appointments fetched", appointments)
+    );
+});
+
+export {
     createAppointment,
-    getSurveyorTasks
-}
+    assignSurveyor,
+    updateStatus,
+    getMyAppointments,
+    getSurveyorTasks,
+    getAllAppointments
+};

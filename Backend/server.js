@@ -5,6 +5,8 @@ import connectDB from "./database/DB.config.js";
 import authRoutes from "./routes/user.route.js";
 import surveyRoutes from "./routes/survey.route.js";
 import plannerRoutes from "./routes/planner.route.js";
+import blueprintRoutes from "./routes/blueprint.route.js";
+import appointmentRoutes from "./routes/appointment.route.js";
 
 dotenv.config();
 connectDB();
@@ -26,6 +28,8 @@ app.use(cors({
 app.use("/api/auth", authRoutes);
 app.use("/api/surveys", surveyRoutes);
 app.use("/api/planners", plannerRoutes);
+app.use("/api/blueprints", blueprintRoutes);
+app.use("/api/appointments", appointmentRoutes);
 
 app.listen(PORT, () => {
   console.log(`✅ Server is running on http://localhost:${PORT}`);

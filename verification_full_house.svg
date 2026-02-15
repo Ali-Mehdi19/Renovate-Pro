@@ -1,0 +1,78 @@
+
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="-500 -500 3000 2000">
+             <defs>
+                <pattern id="grid" width="50" height="50" patternUnits="userSpaceOnUse">
+                    <path d="M 50 0 L 0 0 0 50" fill="none" stroke="gray" stroke-width="0.5" opacity="0.2"/>
+                </pattern>
+            </defs>
+            <rect width="100%" height="100%" fill="url(#grid)" />
+            
+            <g id="Living Room">
+                <path d="M 0 0 L 500 0 L 500 400 L 0 400 Z" fill="#e0f2fe" stroke="black" stroke-width="3" />
+                <text x="50" y="50" font-size="30" font-family="serif" fill="black">Living Room</text>
+            </g>
+        
+            <g id="Kitchen">
+                <path d="M 1100 0 L 1400 0 L 1400 300 L 1100 300 Z" fill="#f0fdf4" stroke="black" stroke-width="3" />
+                <text x="1150" y="50" font-size="30" font-family="serif" fill="black">Kitchen</text>
+            </g>
+        
+            
+        <line x1="0" y1="25" x2="500" y2="25" stroke="blue" stroke-width="1" stroke-dasharray="4" />
+        <circle cx="0" cy="25" r="2" fill="blue" />
+        <circle cx="500" cy="25" r="2" fill="blue" />
+        <text x="250" y="20" font-size="12" fill="blue" text-anchor="middle">
+            5.00m
+        </text>
+    
+        <line x1="475" y1="0" x2="475" y2="400" stroke="blue" stroke-width="1" stroke-dasharray="4" />
+        <circle cx="475" cy="0" r="2" fill="blue" />
+        <circle cx="475" cy="400" r="2" fill="blue" />
+        <text x="475" y="195" font-size="12" fill="blue" text-anchor="middle">
+            4.00m
+        </text>
+    
+        <line x1="500" y1="375" x2="0" y2="375" stroke="blue" stroke-width="1" stroke-dasharray="4" />
+        <circle cx="500" cy="375" r="2" fill="blue" />
+        <circle cx="0" cy="375" r="2" fill="blue" />
+        <text x="250" y="370" font-size="12" fill="blue" text-anchor="middle">
+            5.00m
+        </text>
+    
+        <line x1="25" y1="400" x2="25" y2="0" stroke="blue" stroke-width="1" stroke-dasharray="4" />
+        <circle cx="25" cy="400" r="2" fill="blue" />
+        <circle cx="25" cy="0" r="2" fill="blue" />
+        <text x="25" y="195" font-size="12" fill="blue" text-anchor="middle">
+            4.00m
+        </text>
+    
+        <line x1="1100" y1="25" x2="1400" y2="25" stroke="blue" stroke-width="1" stroke-dasharray="4" />
+        <circle cx="1100" cy="25" r="2" fill="blue" />
+        <circle cx="1400" cy="25" r="2" fill="blue" />
+        <text x="1250" y="20" font-size="12" fill="blue" text-anchor="middle">
+            3.00m
+        </text>
+    
+        <line x1="1375" y1="0" x2="1375" y2="300" stroke="blue" stroke-width="1" stroke-dasharray="4" />
+        <circle cx="1375" cy="0" r="2" fill="blue" />
+        <circle cx="1375" cy="300" r="2" fill="blue" />
+        <text x="1375" y="145" font-size="12" fill="blue" text-anchor="middle">
+            3.00m
+        </text>
+    
+        <line x1="1400" y1="275" x2="1100" y2="275" stroke="blue" stroke-width="1" stroke-dasharray="4" />
+        <circle cx="1400" cy="275" r="2" fill="blue" />
+        <circle cx="1100" cy="275" r="2" fill="blue" />
+        <text x="1250" y="270" font-size="12" fill="blue" text-anchor="middle">
+            3.00m
+        </text>
+    
+        <line x1="1125" y1="300" x2="1125" y2="0" stroke="blue" stroke-width="1" stroke-dasharray="4" />
+        <circle cx="1125" cy="300" r="2" fill="blue" />
+        <circle cx="1125" cy="0" r="2" fill="blue" />
+        <text x="1125" y="145" font-size="12" fill="blue" text-anchor="middle">
+            3.00m
+        </text>
+    
+        </svg>
+    

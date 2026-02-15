@@ -4,124 +4,122 @@ import User from '../models/user.models.js';
 import dotenv from 'dotenv';
 import { ApiError } from '../utils/ApiError.js';
 import { ApiResponse } from '../utils/ApiResponse.js';
+import { asyncHandler } from '../utils/asyncHandler.js';
 
 dotenv.config();
 
 // 🟩 Register (Sign Up)
-export const registerUser = async (req, res) => {
-  try {
+export const registerUser = asyncHandler(async (req, res) => {
+  const { fullName, email, password, role } = req.body;
 
-    const { fullName, email, password, role } = req.body;
-
-    // Validation
-    if (!fullName || !email || !password || !role) {
-      return new ApiError(400, "All fields are required");
-    }
-
-    // Check if user already exists
-    const existingUser = await User.findOne({ email });
-    if (existingUser) {
-      return  new ApiError(400, "User already exists with this email");
-    }
-
-    // Hash password
-    const hashedPassword = await bcrypt.hash(password, 10);
-
-    // Create new user
-    const newUser = new User({
-      fullName,
-      email,
-      password: hashedPassword,
-      role,
-    });
-
-    await newUser.save();
-
-    return new ApiResponse(201, { message: "User registered successfully" });
-
-  } catch (error) {
-    console.error(error);
-    new ApiError(500, "Server error during registration", error);
+  // Validation
+  if (!fullName || !email || !password || !role) {
+    throw new ApiError(400, "All fields are required");
   }
-};
+
+  // Check if user already exists
+  const existingUser = await User.findOne({ email });
+  if (existingUser) {
+    throw new ApiError(409, "User with email already exists");
+  }
+
+  // Create new user (password hashing is handled by pre-save hook in model)
+  const newUser = await User.create({
+    fullName,
+    email,
+    password,
+    role,
+  });
+
+  const createdUser = await User.findById(newUser._id).select("-password");
+
+  if (!createdUser) {
+    throw new ApiError(500, "Something went wrong while registering the user");
+  }
+
+  return res.status(201).json(
+    new ApiResponse(201, "User registered successfully", createdUser)
+  );
+});
 
 // 🟦 Login
-export const loginUser = async (req, res) => {
-  try {
-    const { email, password } = req.body;
+export const loginUser = asyncHandler(async (req, res) => {
+  const { email, password } = req.body;
 
-    // Validation
-    if (!email || !password) {
-      return new ApiError(400, "Email and password are required");
-    }
-
-    const user = await User.findOne({ email });
-    if (!user) {
-      return new ApiError(400, "Invalid email or password");
-    }
-
-    // Compare password
-    const isMatch = await bcrypt.compare(password, user.password);
-    if (!isMatch) {
-      return new ApiError(400, "Invalid email or password");
-    }
-
-    // Generate JWT token
-    const token = jwt.sign(
-      { id: user._id, role: user.role },
-      process.env.JWT_SECRET,
-      { expiresIn: '7d' }
-    );
-
-    return res.json({
-      message: "Login successful",
-      token,
-      user: {
-        id: user._id,
-        fullName: user.fullName,
-        email: user.email,
-        role: user.role,
-      },
-    });
-
-  } catch (error) {
-    console.error(error);
-    new ApiError(500, "Server error during login", error);
+  // Validation
+  if (!email || !password) {
+    throw new ApiError(400, "Email and password are required");
   }
-};
+
+  const user = await User.findOne({ email });
+  if (!user) {
+    throw new ApiError(404, "User does not exist");
+  }
+
+  // Compare password
+  const isMatch = await user.isPasswordMatched(password);
+  if (!isMatch) {
+    throw new ApiError(401, "Invalid user credentials");
+  }
+
+  // Generate JWT token
+  const token = jwt.sign(
+    { id: user._id, role: user.role },
+    process.env.JWT_SECRET,
+    { expiresIn: '7d' }
+  );
+
+  const loggedInUser = await User.findById(user._id).select("-password");
+
+  const option = {
+    httpOnly: true,
+    secure: true
+  }
+
+  return res
+    .status(200)
+    .cookie("accessToken", token, option)
+    .json(
+      new ApiResponse(
+        200,
+        "User logged In Successfully",
+        {
+          user: loggedInUser,
+          token
+        }
+      )
+    )
+});
 
 // 🟨 Get User Profile
-export const getUserProfile = async (req, res) => {
-  try {
-    const user = await User.findById(req.user.id).select("-password");
-    if (!user) {
-      return new ApiError(404, "User not found");
-    }
-    return new ApiResponse(200, user);
-  } catch (error) {
-    console.error(error);
-    new ApiError(500, "Server error during profile retrieval", error);
-  }
-};
+export const getUserProfile = asyncHandler(async (req, res) => {
+  return res
+    .status(200)
+    .json(new ApiResponse(200, "User profile fetched successfully", req.user));
+});
 
 // 🟧 Update User Profile 
-export const updateUserProfile = async (req, res) => {
-  try {
-    const { fullName, email }
-     = req.body;
-    const user = await User.findByIdAndUpdate(
-      req.user.id,
-      { fullName, email },
-      { new: true }
-    ).select("-password");
-    if (!user) {
-      return new ApiError(404, "User not found");
-    }
-    return new ApiResponse(200, user);
-  } catch (error) {
-    console.error(error);
-    new ApiError(500, "Server error during profile update", error);
+export const updateUserProfile = asyncHandler(async (req, res) => {
+  const { fullName, email } = req.body;
+
+  if (!fullName && !email) {
+    throw new ApiError(400, "At least one field is required to update");
   }
-};
+
+  const user = await User.findByIdAndUpdate(
+    req.user._id,
+    {
+      $set: {
+        fullName,
+        email
+      }
+    },
+    { new: true }
+  ).select("-password");
+
+  return res
+    .status(200)
+    .json(new ApiResponse(200, "Account details updated successfully", user));
+});
 
 
