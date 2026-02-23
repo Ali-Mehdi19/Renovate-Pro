@@ -19,10 +19,25 @@ app.use(express.json());
 
 // CORS setup
 app.use(cors({
-  origin: "http://localhost:3000", // Allow only frontend origin
+  origin: ["http://localhost:3000", "http://127.0.0.1:3000"], // Allow both localhost and 127.0.0.1
   methods: ["GET", "POST", "PUT", "DELETE", "PATCH"],
   allowedHeaders: ["Content-Type", "Authorization"]
 }));
+
+// Global Error Handler
+app.use((err, req, res, next) => {
+  const statusCode = err.statusCode || 500;
+  const message = err.message || "Internal Server Error";
+
+  console.error(`[Error] ${statusCode} - ${message}`);
+
+  res.status(statusCode).json({
+    success: false,
+    message,
+    errors: err.errors || [],
+    stack: process.env.NODE_ENV === 'development' ? err.stack : undefined
+  });
+});
 
 // Routes
 app.use("/api/auth", authRoutes);
