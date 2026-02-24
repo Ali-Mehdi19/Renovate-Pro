@@ -1,4 +1,4 @@
-import { asyncHandler } from '../utils/AsyncHandler.js';
+import { AsyncHandler } from '../utils/AsyncHandler.js';
 import { ApiError } from '../utils/ApiError.js';
 import { ApiResponse } from '../utils/ApiResponse.js';
 import SurveyData from '../models/surveydata.models.js';
@@ -6,7 +6,7 @@ import Blueprint from '../models/blueprint.models.js';
 import { resolveVertices } from '../services/geometricCore.js';
 import { generateCompleteBlueprint } from '../services/svgRenderer.js';
 
-export const generateBlueprint = asyncHandler(async (req, res) => {
+export const generateBlueprint = AsyncHandler(async (req, res) => {
     const { surveyId } = req.params;
 
     if (!surveyId) {
@@ -85,7 +85,7 @@ export const generateBlueprint = asyncHandler(async (req, res) => {
         .json(new ApiResponse(201, "Blueprint generated successfully", blueprint));
 });
 
-export const getBlueprintByApptId = asyncHandler(async (req, res) => {
+export const getBlueprintByApptId = AsyncHandler(async (req, res) => {
     const { apptId } = req.params;
 
     // 1. Find Survey for this Appointment
