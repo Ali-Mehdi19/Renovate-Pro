@@ -20,7 +20,7 @@ export const metadata = {
 export default function RootLayout({ children }) {
   return (
     <html lang="en" suppressHydrationWarning>
-      <body className={`${outfit.variable} ${playfair.variable} antialiased`}>
+      <body className={`${outfit.variable} ${playfair.variable} antialiased`} suppressHydrationWarning>
         <AuthProvider>
           {children}
         </AuthProvider>
