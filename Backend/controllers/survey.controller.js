@@ -2,7 +2,7 @@ import SurveyData from '../models/surveydata.models.js';
 import crypto from 'crypto';
 import { ApiResponse } from '../utils/ApiResponse.js';
 import { ApiError } from '../utils/ApiError.js';
-import { asyncHandler } from '../utils/asyncHandler.js';
+import { asyncHandler } from '../utils/AsyncHandler.js';
 import triggerBlueprintGenerator from '../services/BlueprintTrigger.js';
 
 const submitSurvey = asyncHandler(async (req, res) => {
