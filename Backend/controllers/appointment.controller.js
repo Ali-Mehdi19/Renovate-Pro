@@ -1,10 +1,10 @@
 import Appointment from "../models/appointment.models.js";
-import { asyncHandler } from '../utils/AsyncHandler.js';
+import { AsyncHandler } from '../utils/AsyncHandler.js';
 import { ApiError } from "../utils/ApiError.js";
 import { ApiResponse } from "../utils/ApiResponse.js";
 
 // 1. Create Appointment (Customer)
-const createAppointment = asyncHandler(async (req, res) => {
+const createAppointment = AsyncHandler(async (req, res) => {
     const { date_time, address, geocode } = req.body;
 
     // Validation
@@ -31,7 +31,7 @@ const createAppointment = asyncHandler(async (req, res) => {
 });
 
 // 2. Assign Surveyor (Admin/Planner)
-const assignSurveyor = asyncHandler(async (req, res) => {
+const assignSurveyor = AsyncHandler(async (req, res) => {
     const { id } = req.params;
     const { surveyorId } = req.body;
 
@@ -56,7 +56,7 @@ const assignSurveyor = asyncHandler(async (req, res) => {
 });
 
 // 3. Update Status (Surveyor/Admin)
-const updateStatus = asyncHandler(async (req, res) => {
+const updateStatus = AsyncHandler(async (req, res) => {
     const { id } = req.params;
     const { status } = req.body;
 
@@ -83,7 +83,7 @@ const updateStatus = asyncHandler(async (req, res) => {
 });
 
 // 4. Get My Appointments (Customer)
-const getMyAppointments = asyncHandler(async (req, res) => {
+const getMyAppointments = AsyncHandler(async (req, res) => {
     const appointments = await Appointment.find({ customer_id: req.user._id })
         .sort({ date_time: 1 });
 
@@ -93,7 +93,7 @@ const getMyAppointments = asyncHandler(async (req, res) => {
 });
 
 // 5. Get Assigned Tasks (Surveyor)
-const getSurveyorTasks = asyncHandler(async (req, res) => {
+const getSurveyorTasks = AsyncHandler(async (req, res) => {
     if (req.user.role !== 'Surveyor') throw new ApiError(403, "Access denied");
 
     const tasks = await Appointment.find({
@@ -107,7 +107,7 @@ const getSurveyorTasks = asyncHandler(async (req, res) => {
 });
 
 // 6. Get All Appointments (Agile/Admin view)
-const getAllAppointments = asyncHandler(async (req, res) => {
+const getAllAppointments = AsyncHandler(async (req, res) => {
     if (req.user.role !== 'Admin' && req.user.role !== 'Planner') {
         throw new ApiError(403, "Access denied");
     }
