@@ -12,7 +12,7 @@ dotenv.config();
 connectDB();
 
 const app = express();
-const PORT = process.env.PORT || 8000;
+const PORT = process.env.PORT || 10000;
 
 // Middleware
 app.use(express.json());
@@ -46,6 +46,6 @@ app.use("/api/planners", plannerRoutes);
 app.use("/api/blueprints", blueprintRoutes);
 app.use("/api/appointments", appointmentRoutes);
 
-app.listen(PORT, () => {
+app.listen(PORT, "0.0.0.0", () => {
   console.log(`✅ Server is running on http://localhost:${PORT}`);
 });
