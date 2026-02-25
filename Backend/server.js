@@ -9,7 +9,6 @@ import blueprintRoutes from "./routes/blueprint.route.js";
 import appointmentRoutes from "./routes/appointment.route.js";
 
 dotenv.config();
-connectDB();
 
 const app = express();
 const PORT = process.env.PORT || 10000;
@@ -56,6 +55,12 @@ app.use((err, req, res, next) => {
   });
 });
 
-app.listen(PORT, "0.0.0.0", () => {
-  console.log(`✅ Server is running on http://localhost:${PORT}`);
-});
+// Wait for DB to connect BEFORE starting the server
+const startServer = async () => {
+  await connectDB();
+  app.listen(PORT, "0.0.0.0", () => {
+    console.log(`✅ Server is running on http://localhost:${PORT}`);
+  });
+};
+
+startServer();
