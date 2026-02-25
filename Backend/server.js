@@ -19,12 +19,29 @@ app.use(express.json());
 
 // CORS setup
 app.use(cors({
-  origin: ["http://localhost:3000", "http://127.0.0.1:3000",], // Allow both localhost and 127.0.0.1
+  origin: [
+    "http://localhost:3000",
+    "http://127.0.0.1:3000",
+    process.env.FRONTEND_URL,  // Render deployed frontend URL
+  ].filter(Boolean),
   methods: ["GET", "POST", "PUT", "DELETE", "PATCH"],
-  allowedHeaders: ["Content-Type", "Authorization"]
+  allowedHeaders: ["Content-Type", "Authorization"],
+  credentials: true
 }));
 
-// Global Error Handler
+// Health check endpoint (Render pings this to verify the service is alive)
+app.get("/", (req, res) => {
+  res.status(200).json({ status: "ok", message: "Renovate-Pro API is running" });
+});
+
+// Routes
+app.use("/api/auth", authRoutes);
+app.use("/api/surveys", surveyRoutes);
+app.use("/api/planners", plannerRoutes);
+app.use("/api/blueprints", blueprintRoutes);
+app.use("/api/appointments", appointmentRoutes);
+
+// Global Error Handler (must be after routes)
 app.use((err, req, res, next) => {
   const statusCode = err.statusCode || 500;
   const message = err.message || "Internal Server Error";
@@ -38,13 +55,6 @@ app.use((err, req, res, next) => {
     stack: process.env.NODE_ENV === 'development' ? err.stack : undefined
   });
 });
-
-// Routes
-app.use("/api/auth", authRoutes);
-app.use("/api/surveys", surveyRoutes);
-app.use("/api/planners", plannerRoutes);
-app.use("/api/blueprints", blueprintRoutes);
-app.use("/api/appointments", appointmentRoutes);
 
 app.listen(PORT, "0.0.0.0", () => {
   console.log(`✅ Server is running on http://localhost:${PORT}`);
