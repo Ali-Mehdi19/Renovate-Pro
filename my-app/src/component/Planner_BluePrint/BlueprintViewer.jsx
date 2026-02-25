@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import axios from 'axios';
+import api from '../../lib/api';
 
 const BlueprintViewer = ({ blueprintId }) => {
     const [blueprint, setBlueprint] = useState(null);
@@ -10,8 +10,7 @@ const BlueprintViewer = ({ blueprintId }) => {
         const fetchBlueprint = async () => {
             try {
                 setLoading(true);
-                // Assuming backend runs on port 8000
-                const response = await axios.get(`http://localhost:8000/api/planners/${blueprintId}`);
+                const response = await api.get(`/planners/${blueprintId}`);
                 setBlueprint(response.data.data);
             } catch (err) {
                 setError("Failed to load blueprint");
