@@ -9,20 +9,29 @@ import blueprintRoutes from "./routes/blueprint.route.js";
 import appointmentRoutes from "./routes/appointment.route.js";
 
 dotenv.config();
-connectDB();
 
 const app = express();
-const PORT = process.env.PORT || 8000;
+const PORT = process.env.PORT || 10000;
 
 // Middleware
 app.use(express.json());
 
 // CORS setup
 app.use(cors({
-  origin: "http://localhost:3000", // Allow only frontend origin
+  origin: [
+    "http://localhost:3000",
+    "http://127.0.0.1:3000",
+    process.env.FRONTEND_URL,  // Render deployed frontend URL
+  ].filter(Boolean),
   methods: ["GET", "POST", "PUT", "DELETE", "PATCH"],
-  allowedHeaders: ["Content-Type", "Authorization"]
+  allowedHeaders: ["Content-Type", "Authorization"],
+  credentials: true
 }));
+
+// Health check endpoint (Render pings this to verify the service is alive)
+app.get("/", (req, res) => {
+  res.status(200).json({ status: "ok", message: "Renovate-Pro API is running" });
+});
 
 // Routes
 app.use("/api/auth", authRoutes);
@@ -31,6 +40,27 @@ app.use("/api/planners", plannerRoutes);
 app.use("/api/blueprints", blueprintRoutes);
 app.use("/api/appointments", appointmentRoutes);
 
-app.listen(PORT, () => {
-  console.log(`✅ Server is running on http://localhost:${PORT}`);
+// Global Error Handler (must be after routes)
+app.use((err, req, res, next) => {
+  const statusCode = err.statusCode || 500;
+  const message = err.message || "Internal Server Error";
+
+  console.error(`[Error] ${statusCode} - ${message}`);
+
+  res.status(statusCode).json({
+    success: false,
+    message,
+    errors: err.errors || [],
+    stack: process.env.NODE_ENV === 'development' ? err.stack : undefined
+  });
 });
+
+// Wait for DB to connect BEFORE starting the server
+const startServer = async () => {
+  await connectDB();
+  app.listen(PORT, "0.0.0.0", () => {
+    console.log(`✅ Server is running on http://localhost:${PORT}`);
+  });
+};
+
+startServer();

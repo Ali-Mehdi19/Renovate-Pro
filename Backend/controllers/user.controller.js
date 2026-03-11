@@ -4,12 +4,12 @@ import User from '../models/user.models.js';
 import dotenv from 'dotenv';
 import { ApiError } from '../utils/ApiError.js';
 import { ApiResponse } from '../utils/ApiResponse.js';
-import { asyncHandler } from '../utils/asyncHandler.js';
+import { AsyncHandler } from '../utils/AsyncHandler.js';
 
 dotenv.config();
 
 // 🟩 Register (Sign Up)
-export const registerUser = asyncHandler(async (req, res) => {
+export const registerUser = AsyncHandler(async (req, res) => {
   const { fullName, email, password, role } = req.body;
 
   // Validation
@@ -43,7 +43,7 @@ export const registerUser = asyncHandler(async (req, res) => {
 });
 
 // 🟦 Login
-export const loginUser = asyncHandler(async (req, res) => {
+export const loginUser = AsyncHandler(async (req, res) => {
   const { email, password } = req.body;
 
   // Validation
@@ -92,14 +92,14 @@ export const loginUser = asyncHandler(async (req, res) => {
 });
 
 // 🟨 Get User Profile
-export const getUserProfile = asyncHandler(async (req, res) => {
+export const getUserProfile = AsyncHandler(async (req, res) => {
   return res
     .status(200)
     .json(new ApiResponse(200, "User profile fetched successfully", req.user));
 });
 
 // 🟧 Update User Profile 
-export const updateUserProfile = asyncHandler(async (req, res) => {
+export const updateUserProfile = AsyncHandler(async (req, res) => {
   const { fullName, email } = req.body;
 
   if (!fullName && !email) {

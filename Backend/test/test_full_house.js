@@ -1,6 +1,6 @@
 
-import { resolveVertices } from './services/geometricCore.js';
-import { generateCompleteBlueprint } from './services/svgRenderer.js';
+import { resolveVertices } from '../services/geometricCore.js';
+import { generateCompleteBlueprint } from '../services/svgRenderer.js';
 import fs from 'fs';
 
 // Mock Multi-Room Data

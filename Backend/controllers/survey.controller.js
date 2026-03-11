@@ -2,10 +2,10 @@ import SurveyData from '../models/surveydata.models.js';
 import crypto from 'crypto';
 import { ApiResponse } from '../utils/ApiResponse.js';
 import { ApiError } from '../utils/ApiError.js';
-import { asyncHandler } from '../utils/asyncHandler.js';
+import { AsyncHandler } from '../utils/AsyncHandler.js';
 import triggerBlueprintGenerator from '../services/BlueprintTrigger.js';
 
-const submitSurvey = asyncHandler(async (req, res) => {
+const submitSurvey = AsyncHandler(async (req, res) => {
     // 1. RBAC Check
     if (req.user.role !== 'Surveyor' && req.user.role !== 'Admin') {
         throw new ApiError(403, "Access denied: Only Surveyors can submit survey data");
@@ -51,7 +51,7 @@ const submitSurvey = asyncHandler(async (req, res) => {
     );
 });
 
-const getSurveys = asyncHandler(async (req, res) => {
+const getSurveys = AsyncHandler(async (req, res) => {
     // RBAC: Only Planners and Admins should see all surveys
     if (req.user.role !== 'Planner' && req.user.role !== 'Admin') {
         throw new ApiError(403, "Access denied: Only Planners can view all surveys");
@@ -64,7 +64,7 @@ const getSurveys = asyncHandler(async (req, res) => {
     );
 });
 
-const getSurveyById = asyncHandler(async (req, res) => {
+const getSurveyById = AsyncHandler(async (req, res) => {
     const survey = await SurveyData.findById(req.params.id);
 
     if (!survey) {
