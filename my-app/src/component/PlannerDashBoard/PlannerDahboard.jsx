@@ -1,11 +1,13 @@
 "use client";
 import React, { useState, useEffect, useMemo } from 'react';
 import { useAuth } from '../../contexts/AuthContext';
+import { useRouter } from 'next/navigation';
 import api from '../../lib/api';
 import { Eye, Search, Download, User, Briefcase, X } from 'lucide-react';
 import { PieChart, Pie, Cell, Tooltip, ResponsiveContainer } from 'recharts';
 
 const PlannerDashboard = () => {
+  const router = useRouter();
   const { user } = useAuth();
   const [projects, setProjects] = useState([]);
   const [surveyors, setSurveyors] = useState([]);
@@ -105,6 +107,12 @@ const PlannerDashboard = () => {
               onChange={e => setSearchTerm(e.target.value)}
             />
           </div>
+          <button 
+            onClick={() => router.push('/planner/blueprints')}
+            className="w-full sm:w-auto bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition shadow-md flex items-center justify-center gap-2"
+          >
+            <Eye className="h-4 w-4" /> Blueprint Tool
+          </button>
           <button className="w-full sm:w-auto bg-[var(--color-primary)] text-white px-4 py-2 rounded-lg hover:bg-emerald-800 transition shadow-md flex items-center justify-center gap-2">
             <Download className="h-4 w-4" /> Export Report
           </button>

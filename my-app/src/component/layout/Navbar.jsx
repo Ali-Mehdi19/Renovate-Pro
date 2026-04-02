@@ -37,6 +37,9 @@ export default function Navbar() {
           <div className="hidden md:flex items-center space-x-8">
             <Link href="/#features" className="text-gray-700 hover:text-[var(--color-primary)] transition">Features</Link>
             <Link href="/#how-it-works" className="text-gray-700 hover:text-[var(--color-primary)] transition">How It Works</Link>
+            {user?.role === 'Planner' && (
+              <Link href="/planner/blueprints" className="text-gray-700 hover:text-[var(--color-primary)] transition">Blueprints</Link>
+            )}
 
             {!user ? (
               <>
@@ -107,6 +110,9 @@ export default function Navbar() {
             <Link href="/#features" onClick={() => setMobileMenuOpen(false)}>Features</Link>
             <Link href="/#how-it-works" onClick={() => setMobileMenuOpen(false)}>How It Works</Link>
             <Link href="/#contact" onClick={() => setMobileMenuOpen(false)}>Contact</Link>
+            {user?.role === 'Planner' && (
+              <Link href="/planner/blueprints" onClick={() => setMobileMenuOpen(false)}>Blueprints</Link>
+            )}
             <button onClick={() => router.push("/login")}>
               Login
             </button>
